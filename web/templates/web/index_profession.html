@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Index des professions</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'web/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'web/bootstrap/css/bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'web/fontawesome/css/all.css' %}">
+    <link rel="icon" href="{% static 'web/img/favicon.svg' %}" />
+</head>
+
+<body>
+    <script type="text/javascript" src="{% static 'web/bootstrap/js/jquery-3.5.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'web/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="popover"]').popover();
+        });
+    </script>
+
+    <nav class="navbar navbar-light" style="background-color: #0F417A;">
+
+        <a class="navbar-brand text-white">
+            Consultation de l'index des professions
+        </a>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col col-lg mt-4 mr-4 ml-4">
+                <h3>Index des professions</h3>
+            </div>
+        </div>
+        <div class="row" id="section_informations">
+            <div class="col col-lg mt-4 mr-4 ml-4">
+                <div class="card w-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Informations</h5>
+                        <form id="formulaire_index" autocomplete="off" accept-charset="utf-8" class="needs-validation"
+                            novalidate>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group" style="position: relative;">
+                                        <div class="row justify-content-between mb-2">
+                                            <div class="col-auto">
+                                                <label for="libelle">Libellé de profession :</label>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="row justify-content-between">
+                                                    <div class="col-auto"><span class="fa fa-male fa-2x" id="homme"
+                                                            style="color: #286AC7;" onclick="changerSexe(0);"></span>
+                                                    </div>
+                                                    <div class="col-auto"><input class="custom-range" type="range"
+                                                            id="sexe" min="0" max="1" value="0"
+                                                            onchange="changerSexe(this.value);"
+                                                            oninput="changerSexe(this.value);"></div>
+                                                    <div class="col-auto"><span class="fa fa-female fa-2x" id="femme"
+                                                            style="color: #B0AEAE;" onclick="changerSexe(1);"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <input type="text" class="form-control" id="libelle" placeholder="Libellé">
+                                        <div id="libelle_validite" class="invalid-feedback">Invalide</div>
+                                        <ul id="search_auto" , class="list-group w-100"
+                                            style="position:absolute; z-index: 10; max-height: 300px; overflow-y: auto;">
+                                            <!--Remplissage en JS-->
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group" id="statut" onchange="depilerVariablesAnnexes();">
+                                        <label>Statut :</label>
+                                        <select class="custom-select">
+                                            <option value=0 selected></option>
+                                            <option value=1>Indépendant (y compris gérant de société ou chef
+                                                d'entreprise salarié)</option>
+                                            <option value=2>Salarié</option>
+                                            <option value=3>Aide-familial (travail non-rémunéré avec un membre de sa
+                                                famille)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="pub" onchange="depilerVariablesAnnexes();">
+                                        <label>Nature de l'employeur :</label>
+                                        <select class="custom-select">
+                                            <option value=1 selected>Fonction publique (d'État, territoriale,
+                                                hospitalière)</option>
+                                            <option value=2>Autre employeur (entreprise, association, de
+                                                particulier, etc.)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="position_pub" onchange="depilerVariablesAnnexes();">
+                                        <label>Position professionnelle :</label>
+                                        <select class="custom-select">
+                                            <option value=0 selected></option>
+                                            <option value=1>Agent de catégorie A de la fonction publique</option>
+                                            <option value=2>Agent de catégorie B de la fonction publique</option>
+                                            <option value=3>Agent de catégorie C de la fonction publique</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="position_priv" onchange="depilerVariablesAnnexes();">
+                                        <label>Position professionnelle :</label>
+                                        <select class="custom-select">
+                                            <option value=0 selected></option>
+                                            <option value=1>Manoeuvre, ouvrier spécialisé</option>
+                                            <option value=2>Ouvrier qualifié, technicien d'atelier</option>
+                                            <option value=3>Employé de bureau, de commerce, de services</option>
+                                            <option value=4>Agent de maîtrise (y. c. administrative ou commerciale)
+                                            </option>
+                                            <option value=5>Technicien</option>
+                                            <option value=6>Ingénieur, cadre d'entreprise</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="nbsal" onchange="depilerVariablesAnnexes();">
+                                        <label>Nombre de personnes travaillant dans l'entreprise :</label>
+                                        <select class="custom-select">
+                                            <option value=0 selected></option>
+                                            <option value=1>Entre 1 et 10 personnes</option>
+                                            <option value=2>Entre 11 et 49 personnes</option>
+                                            <option value=3>50 personnes ou plus</option>
+                                        </select>
+                                    </div>
+                                    <div class="row align-items-end">
+                                        <div class="col">
+                                            <button class="btn btn-success" id="bouton_coder" type="button"
+                                                onclick="coder(); $('#section_codage').show();">Coder</button>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="section_codage">
+            <div class="col col-lg mt-4 mr-4 ml-4">
+                <div class="card w-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Codage</h5>
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-code-tab" data-toggle="tab" href="#nav-code"
+                                    role="tab" aria-controls="nav-home" aria-selected="true">Code</a>
+                                <a class="nav-item nav-link" id="nav-arbre-tab" data-toggle="tab" href="#nav-arbre"
+                                    role="tab" aria-controls="nav-profile" aria-selected="false">Arbre de décision</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-code" role="tabpanel"
+                                aria-labelledby="nav-code-tab"></div>
+                            <div class="tab-pane fade" id="nav-arbre" role="tabpanel" aria-labelledby="nav-arbre-tab">
+                                <object data="{% static 'web/img/arbre.svg' %}" type="image/svg+xml" id="arbresvg"
+                                    width="100%" height="100%"></object>
+                                <div class="container" id="legende_tree">
+                                    <h6>Légende : </h6>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
