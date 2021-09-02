@@ -4,15 +4,13 @@
 <head>
     <title>Index des professions</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'web/bootstrap/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'web/bootstrap/css/bootstrap.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'web/fontawesome/css/all.css' %}">
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
     <link rel="icon" href="{% static 'web/img/favicon.svg' %}" />
 </head>
 
 <body>
-    <script type="text/javascript" src="{% static 'web/bootstrap/js/jquery-3.5.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'web/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script>
         $(document).ready(function () {
             $('[data-toggle="popover"]').popover();

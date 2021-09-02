@@ -1,11 +1,12 @@
 FROM python:3.9
 ENV ELK_HOST="" \
     ELK_PORT="" \
+    SECRET_KEY="" \
     PYTHOPYTHONUNBUFFERED=1
 COPY requirements.txt /tmp/
 EXPOSE 8000
 RUN apt-get update && \
-    apt-get install -y apache2 apache2-dev && \
+    apt-get install -y apache2 apache2-dev  && \
     pip3 install --default-timeout=100 -r tmp/requirements.txt && \
     mkdir cip && mkdir /static && \
 WORKDIR ./cip

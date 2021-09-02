@@ -30,6 +30,8 @@ ALLOWED_HOSTS =  ['.localhost', '127.0.0.1', '[::1]','.insee.fr','.sspcloud.fr']
 INSTALLED_APPS = [
     'api',
     'web',
+    'bootstrap4',
+    'fontawesome-free',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
