@@ -133,8 +133,6 @@ class EchoLibelleProfessionEnrichi(serializers.Serializer):
         help_text="Codage PCS 2020 par défaut en l'absence d'information annexe disponible"
     )
     score = serializers.FloatField(
-        max_length=4,
-        allow_blank=True,
         label="Score de pertinence de l'écho trouvé",
         help_text="Score provenant de la recherche par ElasticSearch de cet écho"
     )
@@ -176,12 +174,14 @@ class RechercheLibelleAutocompletionSerializer(serializers.Serializer):
     libelle = serializers.CharField(
         max_length=255,
         allow_blank=True,
+        write_only=True,
         label="Libellé de profession à rechercher dans l'index",
         help_text="Libellé de profession à rechercher dans l'index"
     )
     genre = serializers.ChoiceField(
         allow_blank=True,
         choices=['masculin','feminin'],
+        write_only=True,
         label="Genre du libellé recherché",
         help_text="Genre du libellé recherché"
     )
@@ -199,24 +199,22 @@ class RechercheLibelleAutocompletionSerializer(serializers.Serializer):
 
 class RechercheLibelleIDSerializer(serializers.Serializer):
     id = serializers.IntegerField(
-        allow_blank=True,
         label="Libellé de profession à rechercher dans l'index",
+        write_only=True,
         help_text="Libellé de profession à rechercher dans l'index"
     )
     echo = EchoLibelleProfessionEnrichi(
         label='Echo trouvé',
-        read_only=True,
-        allow_blank=True
+        read_only=True
     )
 
 class RecherchePostePCSCodeSerializer(serializers.Serializer):
     code_pcs = serializers.IntegerField(
-        allow_blank=True,
         label="Code PCS 2020 à rechercher",
+        write_only=True,
         help_text="Code PCS 2020"
     )
     echo = PosteNomenclaturePCS2020(
         label='Poste de la nomenclature PCS 2020 trouvé',
-        read_only=True,
-        allow_blank=True
+        read_only=True
     )
