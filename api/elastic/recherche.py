@@ -1,10 +1,13 @@
 import re
-from .utils import initialiser_instance_elastic, ConsultationIndexProfessionException
+from .utils import initialiser_instance_elastic, ConsultationIndexProfessionInternalException, ConsultationIndexProfessionBadRequestException
 
 def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,ratio_max_min_score=0.4):
-    es = initialiser_instance_elastic(hosts)
+    try:
+        es = initialiser_instance_elastic(hosts)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
     if genre is None:
-        res = es.search(index=nom_index,size=1000,body={
+        body = {
             "query":{
                 "bool":{
                     "must":[{
@@ -33,37 +36,77 @@ def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,rati
                         "libf":{"pre_tags" : ["<b>"], "post_tags" : ["</b>"]}
                 }
             }
-        },request_timeout=30)
-    elif genre in ["m","f"]:
-        res = es.search(index=nom_index,size=1000,body={
+        }
+    elif genre in ['masculin','feminin']:
+        genre_short = str(genre[0])
+        print(genre_short)
+        body={
             "query":{
                 "bool":{
                     "must":[{
-                        "match": { "lib"+genre: {"query": libelle} }
+                        "match": { "lib"+genre_short: {"query": libelle} }
                     }],
                     "should":[{
-                        "match": { "lib"+genre+"_first": {"query":re.split(r'\W+',libelle)[0], "boost":10}}
+                        "match": { "lib"+genre_short+"_first": {"query":re.split(r'\W+',libelle)[0], "boost":10}}
                     }]
                 }
             },
             "highlight":{
                     "fields":{
-                        "lib"+genre:{"pre_tags" : ["<b>"], "post_tags" : ["</b>"]}
+                        "lib"+genre_short:{"pre_tags" : ["<b>"], "post_tags" : ["</b>"]}
                     }
             }
-        },request_timeout=30)
+        }
+    else:
+        raise ConsultationIndexProfessionBadRequestException('Genre inconnu (i.e différent de \'masculin\', \'feminin\' ou null')
+    try:
+        print(body)
+        res = es.search(index=nom_index,size=1000,body=body,request_timeout=100)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
+    print(res)
+
     max_score =  float(res['hits']['max_score'])
     echos = res['hits']['hits']
     nb_echos=len(echos)
     k=0
+    output = []
     while k<nb_echos and float(echos[k]['_score'])/max_score>ratio_max_min_score:
+        output.append({
+            'id':int(echos[k]['_source']['id']),
+            'libelle_masculinise':echos[k]['_source']['libm'],
+            'libelle_masculinise_formate':echos[k]['highlight']['libm'][0],
+            'libelle_feminise':echos[k]['_source']['libf'],
+            'libelle_feminise_formate':echos[k]['highlight']['libf'][0],
+            'priv_cad':echos[k]['_source']['priv_cad'],
+            'priv_tec':echos[k]['_source']['priv_tec'],
+            'priv_am':echos[k]['_source']['priv_am'],
+            'priv_emp':echos[k]['_source']['priv_emp'],
+            'priv_oq':echos[k]['_source']['priv_oq'],
+            'priv_nr':echos[k]['_source']['priv_nr'],
+            'pub_catA':echos[k]['_source']['pub_catA'],
+            'pub_catB':echos[k]['_source']['pub_catB'],
+            'pub_catC':echos[k]['_source']['pub_catC'],
+            'pub_nr':echos[k]['_source']['pub_nr'],
+            'inde_0_9':echos[k]['_source']['inde_0_9'],
+            'inde_10_49':echos[k]['_source']['inde_10_49'],
+            'inde_sup49':echos[k]['_source']['inde_sup49'],
+            'inde_nr':echos[k]['_source']['inde_nr'],
+            'aid_fam':echos[k]['_source']['aid_fam'],
+            'ssvaran':echos[k]['_source']['ssvaran'],
+            'score':echos[k]['_score']
+        })
         k+=1
-    return echos[:min(k,nb_echos)]
+    return output
 
 
 def rechercher_profession_par_id(hosts,nom_index,id):
     try:
         es = initialiser_instance_elastic(hosts)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+
+    try:
         res = es.search(index=nom_index,body={
                 "query":{
                     "term":{
@@ -73,12 +116,35 @@ def rechercher_profession_par_id(hosts,nom_index,id):
                     }
             }},request_timeout=30)
     except:
-        raise ConsultationIndexProfessionException('Impossible d\'interroger ElasticSearch')
+        raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
     try:
         obs = res['hits']['hits'][0]
     except:
-        raise ConsultationIndexProfessionException('Le libellé de profession avec l\'identifiant {} est introuvable.'.format(id))
-    return res
+        raise ConsultationIndexProfessionBadRequestException('Le libellé de profession avec l\'identifiant {} est introuvable.'.format(id))
+    return {
+            'id':int(obs['_source']['id']),
+            'libelle_masculinise':obs['_source']['libm'],
+            'libelle_masculinise_formate':obs['_source']['libm'],
+            'libelle_feminise':obs['_source']['libf'],
+            'libelle_feminise_formate':obs['_source']['libm'],
+            'priv_cad':obs['_source']['priv_cad'],
+            'priv_tec':obs['_source']['priv_tec'],
+            'priv_am':obs['_source']['priv_am'],
+            'priv_emp':obs['_source']['priv_emp'],
+            'priv_oq':obs['_source']['priv_oq'],
+            'priv_nr':obs['_source']['priv_nr'],
+            'pub_catA':obs['_source']['pub_catA'],
+            'pub_catB':obs['_source']['pub_catB'],
+            'pub_catC':obs['_source']['pub_catC'],
+            'pub_nr':obs['_source']['pub_nr'],
+            'inde_0_9':obs['_source']['inde_0_9'],
+            'inde_10_49':obs['_source']['inde_10_49'],
+            'inde_sup49':obs['_source']['inde_sup49'],
+            'inde_nr':obs['_source']['inde_nr'],
+            'aid_fam':obs['_source']['aid_fam'],
+            'ssvaran':obs['_source']['ssvaran'],
+            'score':0.0
+        }
 
 def rechercher_informations_codepcs(hosts,nom_index,codepcs):
     code = codepcs
@@ -91,6 +157,9 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
         code_complet = code + "0"*(4-len(code))
         try:
             es = initialiser_instance_elastic(hosts)
+        except:
+            raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+        try:
             res = es.search(index=nom_index,body={
                 "query":{
                     "term":{
@@ -100,12 +169,12 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
                     }
             }},request_timeout=30)
         except:
-            raise ConsultationIndexProfessionException('Impossible d\'interroger ElasticSearch')
+            raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
 
         try:
             obs = res['hits']['hits'][0]
         except:
-            raise ConsultationIndexProfessionException('Code PCS "{}" non trouvé'.format(codepcs),200)
+            raise ConsultationIndexProfessionBadRequestException('Code PCS "{}" non trouvé'.format(codepcs),200)
         
         try:
             libelle = obs['_source']['libelle']

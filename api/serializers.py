@@ -209,12 +209,44 @@ class RechercheLibelleIDSerializer(serializers.Serializer):
     )
 
 class RecherchePostePCSCodeSerializer(serializers.Serializer):
-    code_pcs = serializers.IntegerField(
+    code_pcs = serializers.CharField(
         label="Code PCS 2020 à rechercher",
         write_only=True,
         help_text="Code PCS 2020"
     )
     echo = PosteNomenclaturePCS2020(
         label='Poste de la nomenclature PCS 2020 trouvé',
+        read_only=True
+    )
+
+class IndexationNomenclaturePCS2020Serializer(serializers.Serializer):
+    cle_secrete = serializers.CharField(
+        label="Code secret de l'application",
+        write_only=True,
+        help_text="Code secret de l'application"
+    )
+    fichier = serializers.FileField(
+        max_length=None,
+        allow_empty_file=False,
+        use_url=True
+    )
+    message = serializers.CharField(
+        label="Message de retour lors de l'indexation",
+        read_only=True
+    )
+
+class IndexationIndexProfessionSerializer(serializers.Serializer):
+    cle_secrete = serializers.CharField(
+        label="Code secret de l'application",
+        write_only=True,
+        help_text="Code secret de l'application"
+    )
+    fichier = serializers.FileField(
+        max_length=None,
+        allow_empty_file=False,
+        use_url=True
+    )
+    message = serializers.CharField(
+        label="Message de retour lors de l'indexation",
         read_only=True
     )
