@@ -20,7 +20,7 @@ parametrage_index_nomenclature = {
                          },
                          'tokenizer':{
                             'lib_autocomplete_tokenizer':{
-                                'type':     'edge_ngram',
+                                'type': 'edge_ngram',
                                 'min_gram': 2,
                                 'max_gram': 10,
                                 'token_chars': ['letter','digit']

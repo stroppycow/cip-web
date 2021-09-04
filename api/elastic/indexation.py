@@ -171,12 +171,15 @@ def indexer_data_index_professions(data,es,nom_index):
                 "_id": n['id'],
             }
         }
-        n['libm_full'] = 'STARTDEBUT '+ str(n['libm']) +' STOPFIN'
-        n['libf_full'] = 'STARTDEBUT '+ str(n['libf']) +' STOPFIN'
-        n['libm_first'] = re.split(r'\W+', str(n['libm']))[0]
-        n['libf_first'] = re.split(r'\W+', str(n['libf']))[0]
+        obs = {}
+        obs['libm_full'] = 'STARTDEBUT '+ str(n['libm']) +' STOPFIN'
+        obs['libf_full'] = 'STARTDEBUT '+ str(n['libf']) +' STOPFIN'
+        obs['libm_first'] = re.split(r'\W+', str(n['libm']))[0]
+        obs['libf_first'] = re.split(r'\W+', str(n['libf']))[0]
+        for c in ['libm','libf','priv_cad','priv_tec','priv_am','priv_emp','priv_oq','priv_onq','priv_nr','pub_catA','pub_catB','pub_catC','pub_nr','inde_0_9','inde_10_49','inde_sup49','inde_nr','aid_fam','ssvaran']:
+            obs[c] = n[c]
         bulk_data.append(op_dict)
-        bulk_data.append(n)
+        bulk_data.append(obs)
     try:
         es.bulk(index = nom_index, body = bulk_data,request_timeout=300)
     except:

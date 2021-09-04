@@ -1,11 +1,15 @@
 import re
 from .utils import initialiser_instance_elastic, ConsultationIndexProfessionInternalException, ConsultationIndexProfessionBadRequestException
 
+
+  
+
 def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,ratio_max_min_score=0.4):
     try:
         es = initialiser_instance_elastic(hosts)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+        
     if genre is None:
         body = {
             "query":{
@@ -39,7 +43,6 @@ def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,rati
         }
     elif genre in ['masculin','feminin']:
         genre_short = str(genre[0])
-        print(genre_short)
         body={
             "query":{
                 "bool":{
@@ -59,29 +62,39 @@ def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,rati
         }
     else:
         raise ConsultationIndexProfessionBadRequestException('Genre inconnu (i.e différent de \'masculin\', \'feminin\' ou null')
+    
     try:
-        print(body)
         res = es.search(index=nom_index,size=1000,body=body,request_timeout=100)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
-    print(res)
-
+    
+    if len(res['hits']['hits'])==0:
+        return []
     max_score =  float(res['hits']['max_score'])
     echos = res['hits']['hits']
     nb_echos=len(echos)
     k=0
     output = []
     while k<nb_echos and float(echos[k]['_score'])/max_score>ratio_max_min_score:
+        try:
+            libelle_masculinise_formate = echos[k]['highlight']['libm'][0]
+        except:
+            libelle_masculinise_formate = None
+        try:
+            libelle_feminise_formate = echos[k]['highlight']['libf'][0]
+        except:
+            libelle_feminise_formate = None
         output.append({
-            'id':int(echos[k]['_source']['id']),
+            'id':int(echos[k]['_id']),
             'libelle_masculinise':echos[k]['_source']['libm'],
-            'libelle_masculinise_formate':echos[k]['highlight']['libm'][0],
+            'libelle_masculinise_formate':libelle_masculinise_formate,
             'libelle_feminise':echos[k]['_source']['libf'],
-            'libelle_feminise_formate':echos[k]['highlight']['libf'][0],
+            'libelle_feminise_formate':libelle_feminise_formate,
             'priv_cad':echos[k]['_source']['priv_cad'],
             'priv_tec':echos[k]['_source']['priv_tec'],
             'priv_am':echos[k]['_source']['priv_am'],
             'priv_emp':echos[k]['_source']['priv_emp'],
+            'priv_onq':echos[k]['_source']['priv_onq'],
             'priv_oq':echos[k]['_source']['priv_oq'],
             'priv_nr':echos[k]['_source']['priv_nr'],
             'pub_catA':echos[k]['_source']['pub_catA'],
@@ -110,7 +123,7 @@ def rechercher_profession_par_id(hosts,nom_index,id):
         res = es.search(index=nom_index,body={
                 "query":{
                     "term":{
-                        "id":{
+                        "_id":{
                             "value":str(id)
                         }
                     }
@@ -122,7 +135,7 @@ def rechercher_profession_par_id(hosts,nom_index,id):
     except:
         raise ConsultationIndexProfessionBadRequestException('Le libellé de profession avec l\'identifiant {} est introuvable.'.format(id))
     return {
-            'id':int(obs['_source']['id']),
+            'id':int(obs['_id']),
             'libelle_masculinise':obs['_source']['libm'],
             'libelle_masculinise_formate':obs['_source']['libm'],
             'libelle_feminise':obs['_source']['libf'],
@@ -131,6 +144,7 @@ def rechercher_profession_par_id(hosts,nom_index,id):
             'priv_tec':obs['_source']['priv_tec'],
             'priv_am':obs['_source']['priv_am'],
             'priv_emp':obs['_source']['priv_emp'],
+            'priv_onq':obs['_source']['priv_onq'],
             'priv_oq':obs['_source']['priv_oq'],
             'priv_nr':obs['_source']['priv_nr'],
             'pub_catA':obs['_source']['pub_catA'],

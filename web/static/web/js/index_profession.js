@@ -22,7 +22,7 @@ function changerSexe(valeurSexe) {
         $('#homme').css({ 'color': '#B0AEAE' });
         $('#femme').css({ 'color': '#286AC7' });
     }
-    $.get("/profession_strict/", { lib: $('#libelle').val() }, function (data) {
+    $.post("/api/profession_id/", { id: hit['id'] }, function (data) {
         transformerLibelleSexe(data);
     });
 }
@@ -30,49 +30,46 @@ function changerSexe(valeurSexe) {
 $("#libelle").on('input click', function () {
     $('#section_codage').hide();
     suggestProf($(this).val());
-    strictProf($(this).val());
 });
 
 function getGenre() {
-    var genre = 'm';
+    var genre = 'masculin';
     if ($('#sexe').val() == 1) {
-        genre = 'f';
+        genre = 'feminin';
     }
     return genre;
 }
 
 function suggestProf(value) {
     var genre = getGenre();
-    $.get("/profession/", { lib: value, genre: genre }, function (data) {
+    $.post("/api/profession_auto/", { libelle: value, genre: genre}, function (data) {
         showSuggestionsProf(data);
     });
 }
 
 function strictProf(value) {
-    var genre = getGenre();
-    $.get("/profession_strict/", { lib: value, genre: genre }, function (data) {
+    $.post("/api/profession_id/", { id: value}, function (data) {
         updateListeStrictElement(data);
     });
 }
 
 function showSuggestionsProf(data) {
     var div = '';
-    data.forEach(function (suggestion) {
+    data['echos'].forEach(function (suggestion) {
         var texteFormate = '';
         if ($('#sexe').val() == 0) {
-            texteFormate = suggestion.highlight.libm[0];
+            texteFormate = suggestion.libelle_masculinise_formate;
         } else {
-            texteFormate = suggestion.highlight.libf[0];
+            texteFormate = suggestion.libelle_feminise_formate;
         }
-        div += ('<li class="list-group-item list-group-item-action pl-4 pt-1 pb-1 pr-4 m-0" onmouseover="this.style.background=\'#8DB0E1\';" onmouseout="this.style.background=\'\';this.style.color=\'\';" onclick="autocompletionProfChoix(this)"><small>' + texteFormate + '</small></li>');
+        div += ('<li class="list-group-item list-group-item-action pl-4 pt-1 pb-1 pr-4 m-0" onmouseover="this.style.background=\'#8DB0E1\';" onmouseout="this.style.background=\'\';this.style.color=\'\';" onclick="autocompletionProfChoix('+suggestion.id.toString()+')"><small>' + texteFormate + '</small></li>');
     });
     $('#search_auto').html(div);
 }
 
-function autocompletionProfChoix(li) {
-    $('#libelle').val(li.textContent);
+function autocompletionProfChoix(id) {
     cleanAucompletionProfList();
-    strictProf($('#libelle').val());
+    strictProf(id);
 }
 
 function cleanAucompletionProfList() {
@@ -82,16 +79,8 @@ function cleanAucompletionProfList() {
 function updateListeStrictElement(data) {
     $('#formulaire_index').removeClass('needs-validation');
     $('#formulaire_index').removeClass('was-validated');
-    var liste_strict_element = null;
-    var resultat = data['hits']['hits'];
-    if (resultat === undefined) {
-        liste_strict_element = null;
-    } else if (resultat.length == 0) {
-        liste_strict_element = null;
-    } else {
-        liste_strict_element = resultat[0];
-    }
-    if (liste_strict_element === null) {
+    var resultat = data['echo'];
+    if (resultat === null ||  resultat === undefined) {
         hit = null;
         $('#libelle_validite').removeClass('valid-feedback');
         $('#libelle_validite').addClass('invalid-feedback');
@@ -111,7 +100,13 @@ function updateListeStrictElement(data) {
         $('#bouton_coder').hide();
 
     } else {
-        hit = liste_strict_element;
+        hit = resultat;
+        var genre = getGenre();
+        if(genre == 'masculin'){
+            $('#libelle').val(hit.libelle_masculinise);
+        }else{
+            $('#libelle').val(hit.libelle_feminise);
+        }
         $('#libelle_validite').removeClass('invalid-feedback');
         $('#libelle_validite').addClass('valid-feedback');
         $('#libelle').removeClass('is-invalid');
@@ -160,53 +155,52 @@ function depilerVariablesAnnexes() {
 
 function getCode(statut, pub, cpf_pub, cpf_priv, nbsal) {
     if (statut == 0) {
-        return hit['_source']['ssvaran'];
+        return hit['ssvaran'];
     } else if (statut == 1) {
         if (nbsal == 0) {
-            return hit['_source']['inde_nr'];
+            return hit['inde_nr'];
         } else if (nbsal == 1) {
-            return hit['_source']['inde_0_9'];
+            return hit['inde_0_9'];
         } else if (nbsal == 2) {
-            return hit['_source']['inde_10_49'];
+            return hit['inde_10_49'];
         } else {
-            return hit['_source']['inde_sup49'];
+            return hit['inde_sup49'];
         }
     } else if (statut == 2) {
         if (pub == 1) {
             if (cpf_pub == 0) {
-                return hit['_source']['pub_nr'];
+                return hit['pub_nr'];
             } else if (cpf_pub == 1) {
-                return hit['_source']['pub_catA'];
+                return hit['pub_catA'];
             } else if (cpf_pub == 2) {
-                return hit['_source']['pub_catB'];
+                return hit['pub_catB'];
             } else {
-                return hit['_source']['pub_catC'];
+                return hit['pub_catC'];
             }
         } else {
             if (cpf_priv == 0) {
-                return hit['_source']['priv_nr'];
+                return hit['priv_nr'];
             } else if (cpf_priv == 1) {
-                return hit['_source']['priv_onq'];
+                return hit['priv_onq'];
             } else if (cpf_priv == 2) {
-                return hit['_source']['priv_oq'];
+                return hit['priv_oq'];
             } else if (cpf_priv == 3) {
-                return hit['_source']['priv_emp'];
+                return hit['priv_emp'];
             } else if (cpf_priv == 4) {
-                return hit['_source']['priv_am'];
+                return hit['priv_am'];
             } else if (cpf_priv == 5) {
-                return hit['_source']['priv_tec'];
+                return hit['priv_tec'];
             } else {
-                return hit['_source']['priv_cad'];
+                return hit['priv_cad'];
             }
         }
     } else {
-        return hit['_source']['aid_fam'];
+        return hit['aid_fam'];
     }
 }
 
 function feedCodage(code, data) {
     var body = '';
-
     var body_data = '';
     body += '<div id="complement_pcs">';
     body += '<div class="p-3 rounded"  style="background-color: #0F417A;"><div class="row"><div class="col-auto"><h4><span class="badge badge-light">' + code + '</span></h4></div><div class="col"><h4 style="color: white;">' + data.intitule + '</h4></div></div></div>';
@@ -245,7 +239,7 @@ function determinerCouleursFeuilles() {
     var couleurs = ['#286AC7', '#FFC300', '#C4E1FF', '#FDF0C9', '#E4003A', '#1CA459', '#F5B8C2', '#8BC8A4', '#954577', '#0C6876', '#CA8CB3', '#97CFD0', '#0C3A5A', '#D98C07', '#AD1638', '#068043', '#633251', '#0C6876'];
     var c = null;
     output_pcs.forEach(function (x) {
-        c = hit['_source'][x];
+        c = hit[x];
         if (!codes_couleurs.hasOwnProperty(c)) {
             codes_couleurs[c] = couleurs[taille];
             taille = taille + 1;
@@ -258,26 +252,33 @@ function colorierFeuille() {
     var codes_couleurs = determinerCouleursFeuilles();
     var output_pcs = ['pub_catA', 'pub_catB', 'pub_catC', 'pub_nr', 'priv_onq', 'priv_oq', 'priv_emp', 'priv_am', 'priv_tec', 'priv_cad', 'priv_nr', 'inde_0_9', 'inde_10_49', 'inde_sup49', 'inde_nr', 'aid_fam', 'ssvaran'];
     var c = null;
-    output_pcs.forEach(function (x) {
-        c = hit['_source'][x];
-        console.log(c);
-        if (c == 'r') {
-            $('#label_node_' + x + ' > tspan').html('REPR');
-        } else {
-            $('#label_node_' + x + ' > tspan').html(c);
-        }
-        $('#node_' + x).css('fill', codes_couleurs[c]);
-    });
+    var mySVG = document.getElementById("arbresvg");
+    var svgDoc;
+    mySVG.addEventListener("load",function() {
+            svgDoc = mySVG.contentDocument;
+            output_pcs.forEach(function (x) {
+                c = hit[x];
+                if (c == 'r') {
+                    svgDoc.querySelector('#label_node_' + x + ' > tspan').innerHTML = 'REPR';
+                } else {
+                    svgDoc.querySelector('#label_node_' + x + ' > tspan').innerHTML = c;
+                }
+                svgDoc.querySelector('#node_' + x).style.fill = codes_couleurs[c];
+            });
+    }, false);
+    
+    
     $('#legende_tree').html('<h6>Légende: </h6>');
     for (const code in codes_couleurs) {
         if (code == 'r') {
             $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">REPR</span></div><div class="col"><p>Code d\'envoi en reprise (utilisation des variables contextuelles nécessaire)</p></div></div>');
         } else {
             $.ajax({
-                url: '/recuperer_intitule_codepcs/?code=' + code,
-                method: 'GET',
+                url: '/api/poste_pcs/',
+                data: {code_pcs:code},
+                method: 'POST',
                 success: function (data) {
-                    $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">' + code + '</span></div><div class="col"><p>' + data.intitule + '</p></div></div>');
+                    $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">' + code + '</span></div><div class="col"><p>' + data.echo.intitule + '</p></div></div>');
                 }
 
             });
@@ -286,55 +287,62 @@ function colorierFeuille() {
 }
 
 function colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal) {
-    $("path[id^=path_]").css('stroke', '#B0AEAE');
-    $("#path_root").css('stroke', '#000000');
-    if (statut == 0) {
-        $("#path_nr").css('stroke', '#000000');
-    } else if (statut == 1) {
-        $("#path_inde").css('stroke', '#000000');
-        if (nbsal == 0) {
-            $("#path_taille_nr").css('stroke', '#000000');
-        } else if (nbsal == 1) {
-            $("#path_taille1").css('stroke', '#000000');
-        } else if (nbsal == 2) {
-            $("#path_taille2").css('stroke', '#000000');
-        } else {
-            $("#path_taille3").css('stroke', '#000000');
-        }
-    } else if (statut == 2) {
-        $("#path_salarie").css('stroke', '#000000');
-        if (pub == 1) {
-            $("#path_pub").css('stroke', '#000000');
-            if (cpf_pub == 0) {
-                $("#path_pub_nr").css('stroke', '#000000');
-            } else if (cpf_pub == 1) {
-                $("#path_catA").css('stroke', '#000000');
-            } else if (cpf_pub == 2) {
-                $("#path_catB").css('stroke', '#000000');
+    var arbreSVG = document.getElementById("arbresvg");
+    var arbreDoc;
+    arbreSVG.addEventListener("load",function() {
+        arbreDoc = arbreSVG.contentDocument;
+        var liste_path = ['path_root', 'path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
+        liste_path.forEach(function(c){
+            arbreDoc.getElementById(c).style.stroke = '#B0AEAE';
+        })
+        if (statut == 0) {
+            arbreDoc.querySelector('#path_nr').style.stroke = "#000000";
+        } else if (statut == 1) {
+            arbreDoc.querySelector("#path_inde").style.stroke = '#000000';
+            if (nbsal == 0) {
+                arbreDoc.querySelector("#path_taille_nr").style.stroke = '#000000';
+            } else if (nbsal == 1) {
+                arbreDoc.querySelector("#path_taille1").style.stroke = '#000000';
+            } else if (nbsal == 2) {
+                arbreDoc.querySelector("#path_taille2").style.stroke = '#000000';
             } else {
-                $("#path_catC").css('stroke', '#000000');
+                arbreDoc.querySelector("#path_taille3").style.stroke = '#000000';
+            }
+        } else if (statut == 2) {
+            arbreDoc.querySelector("#path_salarie").style.stroke = '#000000';
+            if (pub == 1) {
+                arbreDoc.querySelector("#path_pub").style.stroke = '#000000';
+                if (cpf_pub == 0) {
+                    arbreDoc.querySelector("#path_pub_nr").style.stroke = '#000000';
+                } else if (cpf_pub == 1) {
+                    arbreDoc.querySelector("#path_catA").style.stroke = '#000000';
+                } else if (cpf_pub == 2) {
+                    arbreDoc.querySelector("#path_catB").style.stroke = '#000000';
+                } else {
+                    arbreDoc.querySelector("#path_catC").style.stroke = '#000000';
+                }
+            } else {
+                arbreDoc.querySelector("#path_priv").style.stroke = '#000000';
+                if (cpf_priv == 0) {
+                    arbreDoc.querySelector("#path_priv_nr").style.stroke = '#000000';
+                } else if (cpf_priv == 1) {
+                    arbreDoc.querySelector("#path_onq").style.stroke = '#000000';
+                } else if (cpf_priv == 2) {
+                    arbreDoc.querySelector("#path_oq").style.stroke = '#000000';
+                } else if (cpf_priv == 3) {
+                    arbreDoc.querySelector("#path_emp").style.stroke = '#000000';
+                } else if (cpf_priv == 4) {
+                    arbreDoc.querySelector("#path_am").style.stroke = '#000000';
+                } else if (cpf_priv == 5) {
+                    arbreDoc.querySelector("#path_tec").style.stroke = '#000000';
+                } else {
+                    arbreDoc.querySelector("#path_cad").style.stroke = '#000000';
+                }
             }
         } else {
-            $("#path_priv").css('stroke', '#000000');
-            if (cpf_priv == 0) {
-                $("#path_priv_nr").css('stroke', '#000000');
-            } else if (cpf_priv == 1) {
-                $("#path_onq").css('stroke', '#000000');
-            } else if (cpf_priv == 2) {
-                $("#path_oq").css('stroke', '#000000');
-            } else if (cpf_priv == 3) {
-                $("#path_emp").css('stroke', '#000000');
-            } else if (cpf_priv == 4) {
-                $("#path_am").css('stroke', '#000000');
-            } else if (cpf_priv == 5) {
-                $("#path_tec").css('stroke', '#000000');
-            } else {
-                $("#path_cad").css('stroke', '#000000');
-            }
+            arbreDoc.querySelector("#path_aide").style.stroke = '#000000';
         }
-    } else {
-        $("#path_aide").css('stroke', '#000000');
-    }
+    }, false);
 }
 
 
@@ -355,8 +363,8 @@ function coder() {
     if (code == 'r') {
         feedCodage('REPR', { intitule: 'Code d\'envoi en reprise (utilisation des variables contextuelles nécessaire)' });
     } else {
-        $.get("/recuperer_intitule_codepcs/", { code: code }, function (data) {
-            feedCodage(code, data);
+        $.post("/api/poste_pcs/", { code_pcs: code }, function (data) {
+            feedCodage(code, data['echo']);
         });
 
     }
@@ -367,16 +375,12 @@ function coder() {
 
 function transformerLibelleSexe(data) {
     var liste_strict_element = null;
-    var resultat = data['hits']['hits'];
+    var resultat = data['echo'];
     if (resultat === undefined) {
-        liste_strict_element = null;
-    } else if (resultat.length == 0) {
-        liste_strict_element = null;
-    } else {
-        liste_strict_element = resultat[0];
-    }
-    if (!(liste_strict_element === null)) {
+        resultat = null;
+    } 
+    if (!(resultat === null)) {
         var genre = getGenre();
-        $('#libelle').val(liste_strict_element['_source']['lib' + genre]);
+        $('#libelle').val(resultat['lib' + genre.substr(0,1)]);
     }
 }
