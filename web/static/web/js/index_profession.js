@@ -22,9 +22,18 @@ function changerSexe(valeurSexe) {
         $('#homme').css({ 'color': '#B0AEAE' });
         $('#femme').css({ 'color': '#286AC7' });
     }
-    $.post("/api/profession_id/", { id: hit['id'] }, function (data) {
-        transformerLibelleSexe(data);
-    });
+    if(hit != null){
+        var genre = getGenre();
+        if(genre == 'masculin'){
+            $('#libelle').val(hit['libelle_masculinise']);
+        }else{
+            if(hit.libelle_feminise == undefined || hit.libelle_feminise == null){
+                changerSexe(0);
+            }else{
+                $('#libelle').val(hit['libelle_feminise']);
+            }
+        }
+    }
 }
 
 $("#libelle").on('input click', function () {
@@ -259,9 +268,9 @@ function colorierFeuille() {
             output_pcs.forEach(function (x) {
                 c = hit[x];
                 if (c == 'r') {
-                    svgDoc.querySelector('#label_node_' + x + ' > tspan').innerHTML = 'REPR';
+                    svgDoc.querySelector('#label_node_' + x).innerHTML = 'REPR';
                 } else {
-                    svgDoc.querySelector('#label_node_' + x + ' > tspan').innerHTML = c;
+                    svgDoc.querySelector('#label_node_' + x).innerHTML = c;
                 }
                 svgDoc.querySelector('#node_' + x).style.fill = codes_couleurs[c];
             });
@@ -291,7 +300,7 @@ function colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal) {
     var arbreDoc;
     arbreSVG.addEventListener("load",function() {
         arbreDoc = arbreSVG.contentDocument;
-        var liste_path = ['path_root', 'path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
+        var liste_path = ['path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
         liste_path.forEach(function(c){
             arbreDoc.getElementById(c).style.stroke = '#B0AEAE';
         })

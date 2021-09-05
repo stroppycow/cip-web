@@ -160,6 +160,36 @@ def rechercher_profession_par_id(hosts,nom_index,id):
             'score':0.0
         }
 
+
+def recherche_appartenance_liste(hosts,nom_index,libelle,genre):
+    try:
+        es = initialiser_instance_elastic(hosts)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+    if genre is None:
+        g = 'm'
+    else:
+        g = str(genre[0])
+    try:
+        body = {
+                "query":{
+                    "term":{
+                        'lib'+g+'_full':{
+                            "value":'startdebut '+libelle.lower()+' stopfin'
+                        }
+                    }
+        }}
+        print(body)
+        res = es.search(index=nom_index,body=body,request_timeout=30)
+        print(res)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
+    try:
+        obs = res['hits']['hits'][0]
+        return True
+    except:
+        return False
+    
 def rechercher_informations_codepcs(hosts,nom_index,codepcs):
     code = codepcs
     if code in ['NC','NSP','ATT']:

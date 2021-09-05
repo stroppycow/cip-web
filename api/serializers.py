@@ -196,6 +196,26 @@ class RechercheLibelleAutocompletionSerializer(serializers.Serializer):
         read_only=True,
         min_value=0
     )
+    
+class RechercheAppartenanceListeSerializer(serializers.Serializer):
+    libelle = serializers.CharField(
+        max_length=255,
+        allow_blank=True,
+        write_only=True,
+        label="Libellé de profession à rechercher dans l'index",
+        help_text="Libellé de profession à rechercher dans l'index"
+    )
+    genre = serializers.ChoiceField(
+        allow_blank=True,
+        choices=['masculin','feminin'],
+        write_only=True,
+        label="Genre du libellé recherché",
+        help_text="Genre du libellé recherché"
+    )
+    resultat = serializers.BooleanField(
+        label="Résultat du test d'appartenance",
+        read_only=True
+    )
 
 class RechercheLibelleIDSerializer(serializers.Serializer):
     id = serializers.IntegerField(

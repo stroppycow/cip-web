@@ -1,8 +1,8 @@
 from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import RechercheLibelleAutocompletionSerializer, RechercheLibelleIDSerializer, RecherchePostePCSCodeSerializer, IndexationNomenclaturePCS2020Serializer, IndexationIndexProfessionSerializer
-from .elastic.recherche import rechercher_informations_codepcs,rechercher_profession_par_id,rechercher_professions_par_autocompletion
+from .serializers import RechercheLibelleAutocompletionSerializer, RechercheLibelleIDSerializer, RecherchePostePCSCodeSerializer, IndexationNomenclaturePCS2020Serializer, IndexationIndexProfessionSerializer, RechercheAppartenanceListeSerializer
+from .elastic.recherche import rechercher_informations_codepcs,rechercher_profession_par_id,rechercher_professions_par_autocompletion, recherche_appartenance_liste
 from .elastic.indexation import indexer_nomenclature_pcs2020, indexer_index_professions
 from .elastic.utils import ConsultationIndexProfessionInternalException,ConsultationIndexProfessionBadRequestException
 from rest_framework.generics import GenericAPIView
@@ -54,6 +54,30 @@ class RechercheProfessionIDView(GenericAPIView):
             except ConsultationIndexProfessionBadRequestException:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(data={"echo":output}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class RechercheAppartenanceListeView(GenericAPIView):
+    """
+    Retrouver un libellé de profession dans l'index PCS 2020 à partir de son identifiant
+    """
+    serializer_class = RechercheAppartenanceListeSerializer
+
+    def post(self,request,format=None):
+        serializer = RechercheAppartenanceListeSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                output = recherche_appartenance_liste(
+                    hosts = settings.ELASTIC['HOST'],
+                    nom_index=settings.ELASTIC['INDEX']['index_professions'],
+                    libelle=serializer.validated_data['libelle'],
+                    genre=serializer.validated_data['genre']
+                )
+            except ConsultationIndexProfessionInternalException:
+                return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except ConsultationIndexProfessionBadRequestException:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"resultat":output}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RecherchePosteNomenclaturePCS2020View(GenericAPIView):
