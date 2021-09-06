@@ -9,6 +9,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser
 
 
+
+
 class RechercheProfessionAutocompletionView(GenericAPIView):
     """
     Recherche par autocomplétion des professions dans l'index PCS 2020

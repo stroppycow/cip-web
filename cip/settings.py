@@ -29,7 +29,10 @@ except:
     SECRET_KEY = 'django-insecure-)-15#76ld^kd8lw+l=*#26%@^5nigo@jt2l0=fkv1#0%^g=jrx'
     
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+try:
+    DEBUG = True if os.environ['DEBUG_VALUE'] in ['True','1','true','TRUE'] else False
+except:
+    DEBUG = True
 
 ALLOWED_HOSTS =  ['.localhost', '127.0.0.1', '[::1]','.insee.fr','.sspcloud.fr']
 
