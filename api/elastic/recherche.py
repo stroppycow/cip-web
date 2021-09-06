@@ -161,34 +161,94 @@ def rechercher_profession_par_id(hosts,nom_index,id):
         }
 
 
-def recherche_appartenance_liste(hosts,nom_index,libelle,genre):
+def rechercher_profession_strict(hosts,nom_index,libelle,genre):
     try:
         es = initialiser_instance_elastic(hosts)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
     if genre is None:
-        g = 'm'
-    else:
-        g = str(genre[0])
-    try:
         body = {
-                "query":{
-                    "term":{
-                        'lib'+g+'_full':{
-                            "value":'startdebut '+libelle.lower()+' stopfin'
+            "query":{
+                "bool":{
+                    "must":{
+                        "bool":{
+                            "should":[
+                                {
+                                    "match_phrase":{
+                                        "libm_full":'STARTDEBUT '+libelle+' STOPFIN'
+                                    }
+                                },
+                                {
+                                "match_phrase":{
+                                    "libf_full":'STARTDEBUT '+libelle+' STOPFIN'
+                                }
+                                }
+                            ]
+
+                            }
                         }
                     }
-        }}
-        print(body)
+                }
+            }
+    else:
+        body = {
+            "query":{
+                "bool":{
+                    "must":{
+                        "match_phrase":{
+                                "lib"+str(genre[0])+"_full":'STARTDEBUT '+libelle+' STOPFIN'
+                            }
+                        }
+                    }
+                }
+            }
+    try:
         res = es.search(index=nom_index,body=body,request_timeout=30)
-        print(res)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible d\'interroger ElasticSearch')
-    try:
-        obs = res['hits']['hits'][0]
-        return True
-    except:
-        return False
+    if len(res['hits']['hits'])==0:
+        return []
+    max_score =  float(res['hits']['max_score'])
+    echos = res['hits']['hits']
+    nb_echos=len(echos)
+    k=0
+    output = []
+    while k<nb_echos:
+        try:
+            libelle_masculinise_formate = echos[k]['_source']['libm']
+        except:
+            libelle_masculinise_formate = None
+        try:
+            libelle_feminise_formate = echos[k]['_source']['libf']
+        except:
+            libelle_feminise_formate = None
+        output.append({
+            'id':int(echos[k]['_id']),
+            'libelle_masculinise':echos[k]['_source']['libm'],
+            'libelle_masculinise_formate':libelle_masculinise_formate,
+            'libelle_feminise':echos[k]['_source']['libf'],
+            'libelle_feminise_formate':libelle_feminise_formate,
+            'priv_cad':echos[k]['_source']['priv_cad'],
+            'priv_tec':echos[k]['_source']['priv_tec'],
+            'priv_am':echos[k]['_source']['priv_am'],
+            'priv_emp':echos[k]['_source']['priv_emp'],
+            'priv_onq':echos[k]['_source']['priv_onq'],
+            'priv_oq':echos[k]['_source']['priv_oq'],
+            'priv_nr':echos[k]['_source']['priv_nr'],
+            'pub_catA':echos[k]['_source']['pub_catA'],
+            'pub_catB':echos[k]['_source']['pub_catB'],
+            'pub_catC':echos[k]['_source']['pub_catC'],
+            'pub_nr':echos[k]['_source']['pub_nr'],
+            'inde_0_9':echos[k]['_source']['inde_0_9'],
+            'inde_10_49':echos[k]['_source']['inde_10_49'],
+            'inde_sup49':echos[k]['_source']['inde_sup49'],
+            'inde_nr':echos[k]['_source']['inde_nr'],
+            'aid_fam':echos[k]['_source']['aid_fam'],
+            'ssvaran':echos[k]['_source']['ssvaran'],
+            'score':0
+        })
+        k+=1
+    return output
     
 def rechercher_informations_codepcs(hosts,nom_index,codepcs):
     code = codepcs

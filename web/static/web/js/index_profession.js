@@ -6,12 +6,24 @@ $('#position_priv').hide();
 $('#nbsal').hide();
 $('#bouton_coder').hide();
 var hit = null;
+var arbreDoc = null;
+
+document.getElementById("arbresvg").onload = function() {
+    arbreDoc = document.getElementById("arbresvg").contentDocument;
+}
 
 $(document).on('click', function (event) {
     if (!$(event.target).closest('#search_auto').length) {
         cleanAucompletionProfList();
     }
 });
+
+$("#libelle").on('input click', function () {
+    $('#section_codage').hide();
+    suggestProf($(this).val());
+    testStrict($(this).val());
+});
+
 
 function changerSexe(valeurSexe) {
     $('#sexe').val(valeurSexe);
@@ -36,10 +48,15 @@ function changerSexe(valeurSexe) {
     }
 }
 
-$("#libelle").on('input click', function () {
-    $('#section_codage').hide();
-    suggestProf($(this).val());
-});
+
+
+
+function testStrict(libelle){
+    var genre = getGenre();
+    $.post("/api/profession_stricte/", { libelle: libelle, genre: genre}, function (data) {
+        updateMessageStrict(data);
+    })
+}
 
 function getGenre() {
     var genre = 'masculin';
@@ -85,11 +102,11 @@ function cleanAucompletionProfList() {
     $('#search_auto > li').remove();
 }
 
-function updateListeStrictElement(data) {
+function updateMessageStrict(data){
     $('#formulaire_index').removeClass('needs-validation');
     $('#formulaire_index').removeClass('was-validated');
-    var resultat = data['echo'];
-    if (resultat === null ||  resultat === undefined) {
+    var echos = data['echos'];
+    if (data['nb_echos'] == 0) {
         hit = null;
         $('#libelle_validite').removeClass('valid-feedback');
         $('#libelle_validite').addClass('invalid-feedback');
@@ -101,6 +118,45 @@ function updateListeStrictElement(data) {
         } else {
             $('#libelle_validite').html('Le libellé saisi n\'est pas dans la liste.');
         }
+        $('#statut').hide();
+        $('#pub').hide();
+        $('#position_pub').hide();
+        $('#position_priv').hide();
+        $('#nbsal').hide();
+        $('#bouton_coder').hide();
+    } else {
+        if(echos.length > 1){
+            hit = null;
+            $('#statut').hide();
+            $('#pub').hide();
+            $('#position_pub').hide();
+            $('#position_priv').hide();
+            $('#nbsal').hide();
+            $('#bouton_coder').hide();
+        }else{
+            hit = echos[0];
+            depilerVariablesAnnexes();
+        }
+        
+        var genre = getGenre();
+        if(genre == 'masculin'){
+            $('#libelle').val(hit.libelle_masculinise);
+        }else{
+            $('#libelle').val(hit.libelle_feminise);
+        }
+        $('#libelle_validite').removeClass('invalid-feedback');
+        $('#libelle_validite').addClass('valid-feedback');
+        $('#libelle').removeClass('is-invalid');
+        $('#libelle').addClass('is-valid');
+        $('#libelle_validite').html('Le libellé saisi est bien dans la liste.');
+        
+    }
+}
+
+function updateListeStrictElement(data) {
+    var resultat = data['echo'];
+    if (resultat === null ||  resultat === undefined) {
+        hit = null;
         $('#statut').hide();
         $('#pub').hide();
         $('#position_pub').hide();
@@ -261,21 +317,15 @@ function colorierFeuille() {
     var codes_couleurs = determinerCouleursFeuilles();
     var output_pcs = ['pub_catA', 'pub_catB', 'pub_catC', 'pub_nr', 'priv_onq', 'priv_oq', 'priv_emp', 'priv_am', 'priv_tec', 'priv_cad', 'priv_nr', 'inde_0_9', 'inde_10_49', 'inde_sup49', 'inde_nr', 'aid_fam', 'ssvaran'];
     var c = null;
-    var mySVG = document.getElementById("arbresvg");
-    var svgDoc;
-    mySVG.addEventListener("load",function() {
-            svgDoc = mySVG.contentDocument;
-            output_pcs.forEach(function (x) {
-                c = hit[x];
-                if (c == 'r') {
-                    svgDoc.querySelector('#label_node_' + x).innerHTML = 'REPR';
-                } else {
-                    svgDoc.querySelector('#label_node_' + x).innerHTML = c;
-                }
-                svgDoc.querySelector('#node_' + x).style.fill = codes_couleurs[c];
-            });
-    }, false);
-    
+    output_pcs.forEach(function (x) {
+        c = hit[x];
+        if (c == 'r') {
+            arbreDoc.querySelector('#label_node_' + x).innerHTML = 'REPR';
+        } else {
+            arbreDoc.querySelector('#label_node_' + x).innerHTML = c;
+        }
+        arbreDoc.querySelector('#node_' + x).style.fill = codes_couleurs[c];
+    });
     
     $('#legende_tree').html('<h6>Légende: </h6>');
     for (const code in codes_couleurs) {
@@ -295,69 +345,73 @@ function colorierFeuille() {
     }
 }
 
+
 function colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal) {
-    var arbreSVG = document.getElementById("arbresvg");
-    var arbreDoc;
-    arbreSVG.addEventListener("load",function() {
-        arbreDoc = arbreSVG.contentDocument;
-        var liste_path = ['path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
-        liste_path.forEach(function(c){
-            arbreDoc.getElementById(c).style.stroke = '#B0AEAE';
-        })
-        if (statut == 0) {
-            arbreDoc.querySelector('#path_nr').style.stroke = "#000000";
-        } else if (statut == 1) {
-            arbreDoc.querySelector("#path_inde").style.stroke = '#000000';
-            if (nbsal == 0) {
-                arbreDoc.querySelector("#path_taille_nr").style.stroke = '#000000';
-            } else if (nbsal == 1) {
-                arbreDoc.querySelector("#path_taille1").style.stroke = '#000000';
-            } else if (nbsal == 2) {
-                arbreDoc.querySelector("#path_taille2").style.stroke = '#000000';
+    var liste_path = ['path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
+    liste_path.forEach(function(c){
+        arbreDoc.getElementById(c).style.stroke = '#B0AEAE';
+    })
+    if (statut == 0) {
+        arbreDoc.querySelector('#path_nr').style.stroke = "#000000";
+    } else if (statut == 1) {
+        arbreDoc.querySelector("#path_inde").style.stroke = '#000000';
+        if (nbsal == 0) {
+            arbreDoc.querySelector("#path_taille_nr").style.stroke = '#000000';
+        } else if (nbsal == 1) {
+            arbreDoc.querySelector("#path_taille1").style.stroke = '#000000';
+        } else if (nbsal == 2) {
+            arbreDoc.querySelector("#path_taille2").style.stroke = '#000000';
+        } else {
+            arbreDoc.querySelector("#path_taille3").style.stroke = '#000000';
+        }
+    } else if (statut == 2) {
+        arbreDoc.querySelector("#path_salarie").style.stroke = '#000000';
+        if (pub == 1) {
+            arbreDoc.querySelector("#path_pub").style.stroke = '#000000';
+            if (cpf_pub == 0) {
+                arbreDoc.querySelector("#path_pub_nr").style.stroke = '#000000';
+            } else if (cpf_pub == 1) {
+                arbreDoc.querySelector("#path_catA").style.stroke = '#000000';
+            } else if (cpf_pub == 2) {
+                arbreDoc.querySelector("#path_catB").style.stroke = '#000000';
             } else {
-                arbreDoc.querySelector("#path_taille3").style.stroke = '#000000';
-            }
-        } else if (statut == 2) {
-            arbreDoc.querySelector("#path_salarie").style.stroke = '#000000';
-            if (pub == 1) {
-                arbreDoc.querySelector("#path_pub").style.stroke = '#000000';
-                if (cpf_pub == 0) {
-                    arbreDoc.querySelector("#path_pub_nr").style.stroke = '#000000';
-                } else if (cpf_pub == 1) {
-                    arbreDoc.querySelector("#path_catA").style.stroke = '#000000';
-                } else if (cpf_pub == 2) {
-                    arbreDoc.querySelector("#path_catB").style.stroke = '#000000';
-                } else {
-                    arbreDoc.querySelector("#path_catC").style.stroke = '#000000';
-                }
-            } else {
-                arbreDoc.querySelector("#path_priv").style.stroke = '#000000';
-                if (cpf_priv == 0) {
-                    arbreDoc.querySelector("#path_priv_nr").style.stroke = '#000000';
-                } else if (cpf_priv == 1) {
-                    arbreDoc.querySelector("#path_onq").style.stroke = '#000000';
-                } else if (cpf_priv == 2) {
-                    arbreDoc.querySelector("#path_oq").style.stroke = '#000000';
-                } else if (cpf_priv == 3) {
-                    arbreDoc.querySelector("#path_emp").style.stroke = '#000000';
-                } else if (cpf_priv == 4) {
-                    arbreDoc.querySelector("#path_am").style.stroke = '#000000';
-                } else if (cpf_priv == 5) {
-                    arbreDoc.querySelector("#path_tec").style.stroke = '#000000';
-                } else {
-                    arbreDoc.querySelector("#path_cad").style.stroke = '#000000';
-                }
+                arbreDoc.querySelector("#path_catC").style.stroke = '#000000';
             }
         } else {
-            arbreDoc.querySelector("#path_aide").style.stroke = '#000000';
+            arbreDoc.querySelector("#path_priv").style.stroke = '#000000';
+            if (cpf_priv == 0) {
+                arbreDoc.querySelector("#path_priv_nr").style.stroke = '#000000';
+            } else if (cpf_priv == 1) {
+                arbreDoc.querySelector("#path_onq").style.stroke = '#000000';
+            } else if (cpf_priv == 2) {
+                arbreDoc.querySelector("#path_oq").style.stroke = '#000000';
+            } else if (cpf_priv == 3) {
+                arbreDoc.querySelector("#path_emp").style.stroke = '#000000';
+            } else if (cpf_priv == 4) {
+                arbreDoc.querySelector("#path_am").style.stroke = '#000000';
+            } else if (cpf_priv == 5) {
+                arbreDoc.querySelector("#path_tec").style.stroke = '#000000';
+            } else {
+                arbreDoc.querySelector("#path_cad").style.stroke = '#000000';
+            }
         }
-    }, false);
+    } else {
+        arbreDoc.querySelector("#path_aide").style.stroke = '#000000';
+    }
 }
 
 
 function construireArbre(statut, pub, cpf_pub, cpf_priv, nbsal) {
-    colorierFeuille();
-    colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal);
+    if (arbreDoc == null){
+        document.getElementById("arbresvg").addEventListener("load",function() {
+            arbreDoc = document.getElementById("arbresvg").contentDocument;
+                colorierFeuille();
+                colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal);
+        }, false);
+    }else{
+        colorierFeuille();
+        colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal);
+    }
 }
 
 function coder() {
@@ -375,7 +429,6 @@ function coder() {
         $.post("/api/poste_pcs/", { code_pcs: code }, function (data) {
             feedCodage(code, data['echo']);
         });
-
     }
     construireArbre(statut, pub, cpf_pub, cpf_priv, nbsal);
 
