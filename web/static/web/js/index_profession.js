@@ -332,9 +332,10 @@ function colorierFeuille() {
         if (code == 'r') {
             $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">REPR</span></div><div class="col"><p>Code d\'envoi en reprise (utilisation des variables contextuelles nécessaire)</p></div></div>');
         } else {
+            var cp = code.slice();
             $.ajax({
                 url: '/api/poste_pcs/',
-                data: {code_pcs:code.replace(/0+$/, "")},
+                data: {code_pcs:cp.replace(/0+$/, "")},
                 method: 'POST',
                 success: function (data) {
                     $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">' + code + '</span></div><div class="col"><p>' + data.echo.intitule + '</p></div></div>');
