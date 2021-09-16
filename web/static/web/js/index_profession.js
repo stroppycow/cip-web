@@ -334,7 +334,7 @@ function colorierFeuille() {
         } else {
             $.ajax({
                 url: '/api/poste_pcs/',
-                data: {code_pcs:code},
+                data: {code_pcs:code.replace(/0+$/, "")},
                 method: 'POST',
                 success: function (data) {
                     $('#legende_tree').append('<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code] + '">' + code + '</span></div><div class="col"><p>' + data.echo.intitule + '</p></div></div>');
