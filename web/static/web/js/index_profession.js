@@ -426,7 +426,7 @@ function coder() {
     if (code == 'r') {
         feedCodage('REPR', { intitule: 'Code d\'envoi en reprise (utilisation des variables contextuelles nécessaire)' });
     } else {
-        $.post("/api/poste_pcs/", { code_pcs: code.replace(''.replace(/0+$/, "")) }, function (data) {
+        $.post("/api/poste_pcs/", { code_pcs: code.replace(/0+$/, "") }, function (data) {
             feedCodage(code, data['echo']);
         });
     }
