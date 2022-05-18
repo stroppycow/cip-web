@@ -18,6 +18,7 @@ def indexer_nomenclature_pcs2020(hosts,nom_index,fichier):
         data = pd.read_csv(fichier)
         print(data)
     except:
+        print("hey")
         raise ConsultationIndexProfessionBadRequestException('Impossible d\'interpréter le fichier csv')  
     valider_data_nomenclature(data)
     indexer_data_nomenclature_pcs2020(data.to_dict('records'),es,nom_index)
@@ -30,7 +31,7 @@ def valider_data_nomenclature(data):
             raise ConsultationIndexProfessionBadRequestException('La colonne "{}" n\'est pas présente dans le csv fourni'.format(x))
 
     if data.shape[0]<=0:
-         raise ConsultationIndexProfessionBadRequestException('La table ne contient aucune observation.')
+        raise ConsultationIndexProfessionBadRequestException('La table ne contient aucune observation.')
 
     # Vérifier que les codes sont de longueur 4
     test = [len(x) != 4 for x in data.code]
@@ -80,10 +81,11 @@ def valider_data_nomenclature(data):
 
 def indexer_data_nomenclature_pcs2020(data,es,nom_index):
     try:
-        if es.indices.exists(nom_index):
-            es.indices.delete(nom_index)
+        if es.indices.exists(index=nom_index):
+            es.indices.delete(index=nom_index)
         es.indices.create(index = nom_index, body = parametrage_index_nomenclature, request_timeout=300)
-    except:
+    except Exception as e:
+        print(e)
         raise ConsultationIndexProfessionInternalException('Impossible de créer l\'index ElasticSearch')
     bulk_data = []
     for i,n in enumerate(data):
@@ -157,8 +159,8 @@ def valider_data_index(data):
     
 def indexer_data_index_professions(data,es,nom_index):
     try:
-        if es.indices.exists(nom_index):
-            es.indices.delete(nom_index)
+        if es.indices.exists(index=nom_index):
+            es.indices.delete(index=nom_index)
         es.indices.create(index = nom_index, body = parametrage_index_profession, request_timeout=300)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible de créer l\'index ElasticSearch')
