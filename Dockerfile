@@ -1,6 +1,5 @@
-FROM python:3.9
+FROM python
 ENV ELK_HOST="" \
-    ELK_PORT="" \
     SECRET_KEY="" \
     PYTHOPYTHONUNBUFFERED=1
 COPY requirements.txt /tmp/

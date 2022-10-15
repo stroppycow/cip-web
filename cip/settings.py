@@ -43,7 +43,6 @@ sys.modules['fontawesome_free'] = __import__('fontawesome-free')
 INSTALLED_APPS = [
     'api',
     'web',
-    'bootstrap4',
     'fontawesome_free',
     'django.contrib.admin',
     'django.contrib.auth',

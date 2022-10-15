@@ -3,48 +3,40 @@
 
 <head>
     <title>Index des professions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     {% load static %}
-    {% load bootstrap4 %}
-    {% bootstrap_css %}
-    {% bootstrap_javascript jquery='full' %}
+    <link href="{% static 'web/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <script src="{% static 'web/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'web/js/chroma.min.js' %}"></script>
     <link rel="icon" href="{% static 'web/img/favicon.svg' %}" />
     <link href="{% static 'fontawesome_free/css/all.min.css' %}" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-    <script>
-        $(document).ready(function () {
-            $('[data-toggle="popover"]').popover();
-        });
-    </script>
+    
     <nav class="navbar navbar-light" style="background-color: #0F417A;">
 
-        <a class="navbar-brand text-white">
+        <a class="navbar-brand text-white px-4 m-0 h1">
             Consultation de l'index des professions
         </a>
-        <span class="navbar-text text-white">
+        <span class="d-none d-sm-block navbar-text text-white px-2">
         <a href="/api/swagger-ui/"
                 class="btn btn-primary" style="background-color: #8DB0E1; border-color:  #8DB0E1"
-                data-placement="bottom" data-toggle="popover" data-trigger="hover"
+                data-placement="bottom" data-bs-toggle="popover" data-trigger="hover focus"
                 data-content="API">API</a>
         </span>
 
     </nav>
     <div class="container">
-        <div class="row">
-            <div class="col col-lg mt-4 mr-4 ml-4">
-                <h3>Index des professions</h3>
-            </div>
-        </div>
-        <div class="row" id="section_informations">
-            <div class="col col-lg mt-4 mr-4 ml-4">
+        <div class="row mt-4" id="section_informations">
+            <div class="col col-lg">
                 <div class="card w-100">
                     <div class="card-body">
                         <h5 class="card-title">Informations</h5>
                         <form id="formulaire_index" autocomplete="off" accept-charset="utf-8" class="needs-validation"
                             novalidate>
                             <div class="row">
-                                <div class="col-6">
+                                <div class="col-12 col-sm-6">
                                     <div class="form-group" style="position: relative;">
                                         <div class="row justify-content-between mb-2">
                                             <div class="col-auto">
@@ -70,14 +62,13 @@
                                         <div id="libelle_validite" class="invalid-feedback">Invalide</div>
                                         <ul id="search_auto" , class="list-group w-100"
                                             style="position:absolute; z-index: 10; max-height: 300px; overflow-y: auto;">
-                                            <!--Remplissage en JS-->
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="form-group" id="statut" onchange="depilerVariablesAnnexes();">
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group mb-2" id="statut" onchange="depilerVariablesAnnexes();">
                                         <label>Statut :</label>
-                                        <select class="custom-select">
+                                        <select class="form-select">
                                             <option value=0 selected></option>
                                             <option value=1>Indépendant (y compris gérant de société ou chef
                                                 d'entreprise salarié)</option>
@@ -86,27 +77,27 @@
                                                 famille)</option>
                                         </select>
                                     </div>
-                                    <div class="form-group" id="pub" onchange="depilerVariablesAnnexes();">
+                                    <div class="form-group mb-2" id="pub" onchange="depilerVariablesAnnexes();">
                                         <label>Nature de l'employeur :</label>
-                                        <select class="custom-select">
+                                        <select class="form-select">
                                             <option value=1 selected>Fonction publique (d'État, territoriale,
                                                 hospitalière)</option>
                                             <option value=2>Autre employeur (entreprise, association, de
                                                 particulier, etc.)</option>
                                         </select>
                                     </div>
-                                    <div class="form-group" id="position_pub" onchange="depilerVariablesAnnexes();">
+                                    <div class="form-group mb-2" id="position_pub" onchange="depilerVariablesAnnexes();">
                                         <label>Position professionnelle :</label>
-                                        <select class="custom-select">
+                                        <select class="form-select">
                                             <option value=0 selected></option>
                                             <option value=1>Agent de catégorie A de la fonction publique</option>
                                             <option value=2>Agent de catégorie B de la fonction publique</option>
                                             <option value=3>Agent de catégorie C de la fonction publique</option>
                                         </select>
                                     </div>
-                                    <div class="form-group" id="position_priv" onchange="depilerVariablesAnnexes();">
+                                    <div class="form-group mb-2" id="position_priv" onchange="depilerVariablesAnnexes();">
                                         <label>Position professionnelle :</label>
-                                        <select class="custom-select">
+                                        <select class="form-select">
                                             <option value=0 selected></option>
                                             <option value=1>Manoeuvre, ouvrier spécialisé</option>
                                             <option value=2>Ouvrier qualifié, technicien d'atelier</option>
@@ -117,9 +108,9 @@
                                             <option value=6>Ingénieur, cadre d'entreprise</option>
                                         </select>
                                     </div>
-                                    <div class="form-group" id="nbsal" onchange="depilerVariablesAnnexes();">
+                                    <div class="form-group mb-2" id="nbsal" onchange="depilerVariablesAnnexes();">
                                         <label>Nombre de personnes travaillant dans l'entreprise :</label>
-                                        <select class="custom-select">
+                                        <select class="form-select">
                                             <option value=0 selected></option>
                                             <option value=1>Entre 1 et 10 personnes</option>
                                             <option value=2>Entre 11 et 49 personnes</option>
@@ -129,7 +120,7 @@
                                     <div class="row align-items-end">
                                         <div class="col">
                                             <button class="btn btn-success" id="bouton_coder" type="button"
-                                                onclick="coder(); $('#section_codage').show();">Coder</button>
+                                                onclick="coder(); document.getElementById('section_codage').classList.remove('d-none');">Coder</button>
 
                                         </div>
                                     </div>
@@ -142,7 +133,7 @@
         </div>
 
         <div class="row" id="section_codage">
-            <div class="col col-lg m-4">
+            <div class="col col-lg gy-4 mb-2">
                 <div class="card w-100">
                     <div class="card-body">
                         <h5 class="card-title">Codage</h5>

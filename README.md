@@ -29,6 +29,6 @@ A documenter
 L'application peut être testée à l'adresse https://pcs2020.kub.sspcloud.fr/
 
 ## Livrable
-Une image docker `git-registry.lab.sspcloud.fr/codification-automatique/consultation-index-pcs-2020/cip-web` est disponible.
+Une image docker hébergée sur dockerhub est disponible : `stroppycow/cip-web`.
 
 [^1]: [AMOSSE Thomas, CHARDON Olivier, EIDELMAN Alexis, La rénovation de la nomenclature socioprofessionnelle (2018-2019), Rapport du groupe de travail du Cnis, Décembre 2019](https://www.cnis.fr/wp-content/uploads/2018/01/Rapport-n%C2%B0-156.pdf)
