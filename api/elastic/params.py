@@ -75,7 +75,7 @@ parametrage_index_nomenclature = {
                 'libelle': {'type': 'text','analyzer': 'lib_analyzer', 'search_analyzer': 'lib_analyzer'},
                 'description':{'type':'text'},
                 'professions_typiques':{'type':'text'},
-                'professions_exclues':{'type':'text'}
+                'autres_professions':{'type':'text'}
             }
         }
 }

@@ -4,6 +4,7 @@ from .params import parametrage_index_nomenclature, parametrage_index_profession
 import re
 from .utils import initialiser_instance_elastic,ConsultationIndexProfessionInternalException,ConsultationIndexProfessionBadRequestException
 import pandas as pd
+import markdown
 
 def first_true(liste):
     return liste.index(True)
@@ -26,7 +27,7 @@ def indexer_nomenclature_pcs2020(hosts,nom_index,fichier):
 
 def valider_data_nomenclature(data):
     #tester la présence des colonnes
-    for x in ['code', 'niveau', 'libelle', 'description', 'professions_typiques', 'professions_exclues']:
+    for x in ['code', 'niveau', 'libelle', 'description', 'professions_typiques', 'autres_professions']:
         if x not in data.columns:
             raise ConsultationIndexProfessionBadRequestException('La colonne "{}" n\'est pas présente dans le csv fourni'.format(x))
 
@@ -91,9 +92,9 @@ def indexer_data_nomenclature_pcs2020(data,es,nom_index):
     for i,n in enumerate(data):
         n['code'] = n['code'][:int(n['niveau'])]
         n['code_key'] = n['code']
-        n['description'] = None if isinstance(n['description'],float) else n['description']
+        n['description'] = None if isinstance(n['description'],float) else markdown.markdown(n['description'])
         n['professions_typiques'] = None if isinstance(n['professions_typiques'],float) else n['professions_typiques']
-        n['professions_exclues'] = None if isinstance(n['professions_exclues'],float) else n['professions_exclues']
+        n['autres_professions'] = None if isinstance(n['autres_professions'],float) else n['autres_professions']
         op_dict = {
             "index": {
                 "_index": nom_index,

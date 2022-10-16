@@ -2,8 +2,6 @@ import re
 from .utils import initialiser_instance_elastic, ConsultationIndexProfessionInternalException, ConsultationIndexProfessionBadRequestException
 
 
-  
-
 def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,ratio_max_min_score=0.4):
     try:
         es = initialiser_instance_elastic(hosts)
@@ -256,7 +254,7 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
         code_complet = code
         description = None
         professions_typiques = None
-        profesions_exclues = None
+        autres_professions = None
     else:
         code_complet = code + "0"*(4-len(code))
         try:
@@ -280,6 +278,7 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
         except:
             raise ConsultationIndexProfessionBadRequestException('Code PCS "{}" non trouvé'.format(codepcs),200)
         
+        
         try:
             libelle = obs['_source']['libelle']
         except:
@@ -290,12 +289,12 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
             description = None
         try:
             professions_typiques = obs['_source']['professions_typiques']
-            professions_typiques = professions_typiques.split('|')
+            professions_typiques = [x.strip() for x in professions_typiques.split('|')]
         except:
             professions_typiques = []
         try:
-            profesions_exclues = obs['_source']['profesions_exclues']
-            profesions_exclues = profesions_exclues.split('|')
+            autres_professions = obs['_source']['autres_professions']
+            autres_professions = [x.strip() for x in  autres_professions.split('|')]
         except:
-            profesions_exclues = []
-    return {'intitule': libelle,'code':code_complet,'description':description,'professions_typiques':professions_typiques,'profesions_exclues':profesions_exclues} 
+            autres_professions = []
+    return {'intitule': libelle,'code':code_complet,'description':description,'professions_typiques':professions_typiques,'autres_professions':autres_professions} 

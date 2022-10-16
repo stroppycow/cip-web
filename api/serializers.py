@@ -162,7 +162,7 @@ class PosteNomenclaturePCS2020(serializers.Serializer):
         child=serializers.CharField(),
         allow_empty=True
     )
-    profesions_exclues = serializers.ListField(
+    autres_professions = serializers.ListField(
         label="Liste des professions exclues",
         help_text="Liste des professions exclues",
         child=serializers.CharField(),

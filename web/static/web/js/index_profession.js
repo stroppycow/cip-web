@@ -27,14 +27,41 @@ const tagsCode= ['pub_catA', 'pub_catB', 'pub_catC', 'pub_nr', 'priv_onq', 'priv
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')  ;
 const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl).show()) ;
 
+var largeTree = false ;
+if(window.innerWidth <= 768){
+    document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LONG_TREE);
+}else{
+    largeTree = true ;
+    document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LARGE_TREE);
+}
+
 document.getElementById("arbresvg").onload = function() {
     arbreDoc = document.getElementById("arbresvg").contentDocument;
 }
+
+addEventListener('resize', (event) => {
+    if((window.innerWidth <= 768 ) && largeTree){
+        largeTree = false ;
+        document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LONG_TREE);
+    }else if((window.innerWidth > 768 ) && !largeTree){
+        largeTree = true ;
+        document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LARGE_TREE);
+    }
+});
+
 
 document.addEventListener('click', function (event) {
     if (!(event.target.closest('search_auto') === null)) {
         cleanAucompletionProfList();
     }
+});
+
+document.getElementById("bouton_coder").addEventListener('click', function () {
+    coder();
+});
+
+document.getElementById("nav-arbre-tab").addEventListener('click', function () {
+    document.getElementById('section_codage').scrollIntoView({behavior: "auto", block: "start"});
 });
 
 document.getElementById("libelle").addEventListener('input', function () {
@@ -323,17 +350,17 @@ function feedCodage(code, data) {
         body += '<h5>Description</h5>';
         body += '<small>' + data.description + '</small>';
         if (data.professions_typiques) {
-            body += '<h5>Professions les plus typiques</h5>';
+            body += '<h5>Libellés les plus fréquents</h5>';
             body += '<ul>'
             data.professions_typiques.forEach(function (x) {
                 body += '<li><small>' + x + '</small></li>';
             });
             body += '</ul>'
         }
-        if (data.professions_exclues) {
-            body += '<h5>Professions exclues</h5>';
+        if (data.autres_professions) {
+            body += '<h5>Autres exemples de libellés</h5>';
             body += '<ul>'
-            data.professions_exclues.forEach(function (x) {
+            data.autres_professions.forEach(function (x) {
                 body += '<li><small>' + x + '</small></li>';
             });
             body += '</ul>'
@@ -391,18 +418,6 @@ function determinerCouleursFeuilles() {
         ), new Map() 
     ));
 
-    var output_pcs = ['pub_catA', 'pub_catB', 'pub_catC', 'pub_nr', 'priv_onq', 'priv_oq', 'priv_emp', 'priv_am', 'priv_tec', 'priv_cad', 'priv_nr', 'inde_0_9', 'inde_10_49', 'inde_sup49', 'inde_nr', 'aid_fam', 'ssvaran'];
-    var couleurs = ['#286AC7', '#FFC300', '#C4E1FF', '#FDF0C9', '#E4003A', '#1CA459', '#F5B8C2', '#8BC8A4', '#954577', '#0C6876', '#CA8CB3', '#97CFD0', '#0C3A5A', '#D98C07', '#AD1638', '#068043', '#633251', '#0C6876'];
-    var c = null;
-        
-    output_pcs.forEach(function (x) {
-        c = hit[x];
-        if (!codes_couleurs.hasOwnProperty(c)) {
-            codes_couleurs[c] = {background: couleurs[taille], text: getCorrectTextColor(couleurs[taille])};
-            taille = taille + 1;
-        }
-    });
-    return codes_couleurs;
 }
 
 
@@ -427,7 +442,6 @@ function colorierFeuille() {
     
     codes_tries = Object.keys(codes_couleurs) ;
     codes_tries.sort() ;
-    console.log(codes_tries) ;
     codes_tries.forEach( code => {
         if (code == 'r') {
             document.getElementById('legende_tree').innerHTML += '<div class="row"><div class="col-auto"><span class="badge badge-light" style="background-color: ' + codes_couleurs[code].background + '; color: '+codes_couleurs[code].text +'">REPR</span></div><div class="col"><p>Code d\'envoi en reprise (utilisation des variables contextuelles nécessaire)</p></div></div>' ;
@@ -448,58 +462,76 @@ function colorierFeuille() {
     });
 }
 
+function colorierLineSVG(ids, svg, hex){
+    ids.forEach((id) => {
+        el = svg.getElementById(id) ;
+        if(!(el === null)){
+            el.style.stroke = hex;
+        }
+    })
+}
 
 function colorierChemin(statut, pub, cpf_pub, cpf_priv, nbsal) {
-    var liste_path = ['path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2', 'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB', 'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am','path_tec','path_cad','path_aide'];
-    liste_path.forEach(function(c){
-        arbreDoc.getElementById(c).style.stroke = '#B0AEAE';
-    })
+    var liste_path = ['path_nr', 'path_inde', 'path_taille_nr', 'path_taille1', 'path_taille2',
+    'path_taille3', 'path_salarie', 'path_pub', 'path_pub_nr', 'path_catA', 'path_catB',
+    'path_catC', 'path_priv', 'path_priv_nr', 'path_onq', 'path_oq', 'path_emp','path_am',
+    'path_tec','path_cad','path_aide',
+    'path_statut_1','path_statut_2','path_statut_3','path_statut_4',
+    'path_salarie_1', 'path_salarie_2',
+    'path_pub_1', 'path_pub_2', 'path_pub_3', 'path_pub_4',
+    'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4','path_priv_5','path_priv_6', 'path_priv_7',
+    'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4','path_priv_5','path_priv_6', 'path_priv_7',
+    'path_inde_1', 'path_inde_2', 'path_inde_3', 'path_inde_4'
+    ];
+    colorierLineSVG(liste_path, arbreDoc,'#B0AEAE');
+
+
     if (statut == 0) {
-        arbreDoc.querySelector('#path_nr').style.stroke = "#000000";
+        colorierLineSVG(['path_nr', 'path_statut_1', 'path_statut_2', 'path_statut_3', 'path_statut_4'], arbreDoc,'#000000');
     } else if (statut == 1) {
-        arbreDoc.querySelector("#path_inde").style.stroke = '#000000';
+        colorierLineSVG(['path_inde', 'path_statut_1', 'path_statut_2'], arbreDoc,'#000000');
         if (nbsal == 0) {
-            arbreDoc.querySelector("#path_taille_nr").style.stroke = '#000000';
+            colorierLineSVG(['path_taille_nr', 'path_inde_1', 'path_inde_2', 'path_inde_3', 'path_inde_4'], arbreDoc,'#000000');
         } else if (nbsal == 1) {
-            arbreDoc.querySelector("#path_taille1").style.stroke = '#000000';
+            colorierLineSVG(['path_taille1', 'path_inde_1'], arbreDoc,'#000000');
         } else if (nbsal == 2) {
-            arbreDoc.querySelector("#path_taille2").style.stroke = '#000000';
+            colorierLineSVG(['path_taille2', 'path_inde_1', 'path_inde_2'], arbreDoc,'#000000');
         } else {
-            arbreDoc.querySelector("#path_taille3").style.stroke = '#000000';
+            colorierLineSVG(['path_taille3', 'path_inde_1', 'path_inde_2', 'path_inde_3'], arbreDoc,'#000000');
         }
     } else if (statut == 2) {
-        arbreDoc.querySelector("#path_salarie").style.stroke = '#000000';
+        colorierLineSVG(['path_salarie', 'path_statut_1'], arbreDoc,'#000000');
         if (pub == 1) {
-            arbreDoc.querySelector("#path_pub").style.stroke = '#000000';
+            colorierLineSVG(['path_pub', 'path_salarie_1'], arbreDoc,'#000000');
             if (cpf_pub == 0) {
-                arbreDoc.querySelector("#path_pub_nr").style.stroke = '#000000';
+                colorierLineSVG(['path_pub_nr', 'path_pub_1', 'path_pub_2', 'path_pub_3', 'path_pub_4'], arbreDoc,'#000000');
             } else if (cpf_pub == 1) {
-                arbreDoc.querySelector("#path_catA").style.stroke = '#000000';
+                colorierLineSVG(['path_catA', 'path_pub_1'], arbreDoc,'#000000');
             } else if (cpf_pub == 2) {
-                arbreDoc.querySelector("#path_catB").style.stroke = '#000000';
+                colorierLineSVG(['path_catB', 'path_pub_1', 'path_pub_2'], arbreDoc,'#000000');
             } else {
-                arbreDoc.querySelector("#path_catC").style.stroke = '#000000';
+                colorierLineSVG(['path_catC', 'path_pub_1', 'path_pub_2', 'path_pub_3'], arbreDoc,'#000000');
             }
         } else {
-            arbreDoc.querySelector("#path_priv").style.stroke = '#000000';
+            colorierLineSVG(['path_priv', 'path_salarie_1', 'path_salarie_2'], arbreDoc,'#000000');
             if (cpf_priv == 0) {
-                arbreDoc.querySelector("#path_priv_nr").style.stroke = '#000000';
+                colorierLineSVG(['path_priv_nr', 'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4', 'path_priv_5', 'path_priv_6', 'path_priv_7'], arbreDoc,'#000000');
             } else if (cpf_priv == 1) {
-                arbreDoc.querySelector("#path_onq").style.stroke = '#000000';
+                colorierLineSVG(['path_onq', 'path_priv_1'], arbreDoc,'#000000');
             } else if (cpf_priv == 2) {
-                arbreDoc.querySelector("#path_oq").style.stroke = '#000000';
+                colorierLineSVG(['path_oq', 'path_priv_1', 'path_priv_2'], arbreDoc,'#000000');
             } else if (cpf_priv == 3) {
-                arbreDoc.querySelector("#path_emp").style.stroke = '#000000';
+                colorierLineSVG(['path_emp', 'path_priv_1', 'path_priv_2', 'path_priv_3'], arbreDoc,'#000000');
             } else if (cpf_priv == 4) {
-                arbreDoc.querySelector("#path_am").style.stroke = '#000000';
+                colorierLineSVG(['path_am', 'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4'], arbreDoc,'#000000');
             } else if (cpf_priv == 5) {
-                arbreDoc.querySelector("#path_tec").style.stroke = '#000000';
+                colorierLineSVG(['path_tec', 'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4', 'path_priv_5'], arbreDoc,'#000000');
             } else {
-                arbreDoc.querySelector("#path_cad").style.stroke = '#000000';
+                colorierLineSVG(['path_cad', 'path_priv_1', 'path_priv_2', 'path_priv_3', 'path_priv_4', 'path_priv_5', 'path_priv_6'], arbreDoc,'#000000');
             }
         }
     } else {
-        arbreDoc.querySelector("#path_aide").style.stroke = '#000000';
+        colorierLineSVG(['path_aide', 'path_statut_1', 'path_statut_2', 'path_statut_3'], arbreDoc,'#000000');
     }
 }
 
@@ -518,6 +550,9 @@ function construireArbre(statut, pub, cpf_pub, cpf_priv, nbsal) {
 }
 
 function coder() {
+    document.getElementById('section_codage').classList.remove('d-none');
+
+
     var statut = document.getElementById("statut").querySelector('option:checked').value;
     var pub = document.getElementById("pub").querySelector('option:checked').value;
     var cpf_pub = document.getElementById("position_pub").querySelector('option:checked').value;
@@ -538,10 +573,13 @@ function coder() {
             } else { 
                 throw new Error('Erreur pour échanger avec l\'API');
             }
-        }).then(data => feedCodage(code, data['echo'])) ;
+        }).then(data => {
+            feedCodage(code, data['echo']);
+            document.getElementById('section_codage').scrollIntoView({behavior: "smooth", block: "start"});
+    
+        }) ;
     }
     construireArbre(statut, pub, cpf_pub, cpf_priv, nbsal);
-
 }
 
 
@@ -555,6 +593,8 @@ function transformerLibelleSexe(data) {
         document.getElementById('libelle').value = resultat['lib' + genre.substring(0,1)];
     }
 }
+
+
 
 
 var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab a'))

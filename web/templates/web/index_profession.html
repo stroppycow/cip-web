@@ -117,12 +117,9 @@
                                             <option value=3>50 personnes ou plus</option>
                                         </select>
                                     </div>
-                                    <div class="row align-items-end">
-                                        <div class="col">
-                                            <button class="btn btn-success" id="bouton_coder" type="button"
-                                                onclick="coder(); document.getElementById('section_codage').classList.remove('d-none');">Coder</button>
+                                    <div class="d-flex justify-content-end"">
+                                            <button class="btn btn-success" id="bouton_coder" type="button">Coder</button>
 
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -139,17 +136,21 @@
                         <h5 class="card-title">Codage</h5>
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-code-tab" data-toggle="tab" href="#nav-code"
-                                    role="tab" aria-controls="nav-home" aria-selected="true">Code</a>
-                                <a class="nav-item nav-link" id="nav-arbre-tab" data-toggle="tab" href="#nav-arbre"
-                                    role="tab" aria-controls="nav-profile" aria-selected="false">Arbre de décision</a>
+                                <li class="nav-item" role="presentation">
+                                <button  class="nav-link active" id="nav-code-tab" data-bs-toggle="tab" data-bs-target="#nav-code"
+                                    type="button" role="tab"  aria-controls="nav-home" aria-selected="true">Code</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="nav-arbre-tab" data-bs-toggle="tab" data-bs-target="#nav-arbre"
+                                type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Arbre de décision</button>
+                                </li>
                             </div>
                         </nav>
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-code" role="tabpanel"
                                 aria-labelledby="nav-code-tab"></div>
                             <div class="tab-pane fade" id="nav-arbre" role="tabpanel" aria-labelledby="nav-arbre-tab">
-                                <object data="{% static 'web/img/arbre.svg' %}" type="image/svg+xml" id="arbresvg"
+                                <object  type="image/svg+xml" id="arbresvg"
                                     width="100%" height="100%"></object>
                                 <div class="container" id="legende_tree">
                                     <h6>Légende : </h6>
@@ -162,6 +163,12 @@
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        NG_STATIC_FILES = {
+           "LARGE_TREE": "{% static 'web/img/arbre-large.svg' %}",
+           "LONG_TREE": "{% static 'web/img/arbre-long.svg' %}",
+        };
+    </script>
      <script src="{% static 'web/js/index_profession.js' %}"></script>
 </body>
 
