@@ -322,7 +322,7 @@ def get_all_data_nomenclature_pcs2020(hosts,nom_index):
         raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
     res = scan(client=es, query={"query":{'match_all': {}}}, index=nom_index, scroll='2s')
     data = [{
-            "code":x['_source']["code"],
+            "code":x['_source']["code_key"]+"0"*(4-len(x['_source']["code_key"])),
             "niveau": x['_source']["niveau"],
             "libelle": x['_source']["libelle"],
             "description": None if x['_source']["description"] is None else markdownify(x['_source']["description"]),

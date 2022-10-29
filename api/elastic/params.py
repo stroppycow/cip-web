@@ -93,6 +93,11 @@ parametrage_index_profession = {
                                 'tokenizer': 'lib_autocomplete_tokenizer',
                                 'filter'   : ['asciifolding' ,'lowercase','french_stop','french_stemmer','french_elision']
                             },
+                            'strict_analyzer':{
+                                'type'     : 'custom',
+                                'tokenizer': 'keyword',
+                                'filter'   : ['asciifolding' ,'lowercase']
+                            },
                             'lib_analyzer':{
                                 'type'     : 'custom',
                                 'tokenizer': 'standard',
@@ -149,8 +154,8 @@ parametrage_index_profession = {
                 'id' : {'type': 'keyword'},
                 'libm': {'type': 'text','analyzer': 'lib_auto_analyzer', 'search_analyzer': 'lib_auto_analyzer'},
                 'libf': {'type': 'text','analyzer': 'lib_auto_analyzer', 'search_analyzer': 'lib_auto_analyzer'},
-                'libm_full': {'type': 'text','analyzer': 'lib_analyzer', 'search_analyzer': 'lib_analyzer'},
-                'libf_full': {'type': 'text','analyzer': 'lib_analyzer', 'search_analyzer': 'lib_analyzer'},
+                'libm_full': {'type': 'text','analyzer': 'strict_analyzer', 'search_analyzer': 'strict_analyzer'},
+                'libf_full': {'type': 'text','analyzer': 'strict_analyzer', 'search_analyzer': 'strict_analyzer'},
                 'libm_first': {'type': 'text','analyzer': 'lib_analyzer', 'search_analyzer': 'lib_analyzer'},
                 'libf_first': {'type': 'text','analyzer': 'lib_analyzer', 'search_analyzer': 'lib_analyzer'},
                 'priv_cad': {'type': 'keyword'},
