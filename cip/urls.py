@@ -21,7 +21,7 @@ from web.views import consulter_index_profession
 urlpatterns = [
     path('', consulter_index_profession, name='index-profession'),
     path('openapi', get_schema_view(
-            title="API de consultation l'index des professions PCS 2020",
+            title="API pour consulter ou mettre à jour l'index des professions PCS 2020",
             description="API pour rechercher des entités dans la nomenclature PCS 2020",
             version="1.0.0"
         ), name='openapi-schema'),

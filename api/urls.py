@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RecherchePosteNomenclaturePCS2020View, RechercheProfessionAutocompletionView, RechercheProfessionIDView, IndexationNomenclaturePCS2020View,  IndexationIndexProfessionPCS2020View, RechercheProfessionStricteView
+from .views import RecherchePosteNomenclaturePCS2020View, RechercheProfessionAutocompletionView, RechercheProfessionIDView, IndexationNomenclaturePCS2020View,  IndexationIndexProfessionPCS2020View, RechercheProfessionStricteView, GetInputFileNomenclatureView, GetInputFileIndexView
 
 urlpatterns = [
     path('profession_auto/', RechercheProfessionAutocompletionView.as_view()),
@@ -8,4 +8,6 @@ urlpatterns = [
     path('poste_pcs/', RecherchePosteNomenclaturePCS2020View.as_view()),
     path('indexation_nomenclature_pcs2020/', IndexationNomenclaturePCS2020View.as_view()),
     path('indexation_index_profession/', IndexationIndexProfessionPCS2020View.as_view()),
+    path('telecharger_nomenclature_pcs2020/', GetInputFileNomenclatureView.as_view()),
+    path('telecharger_index_profession/', GetInputFileIndexView.as_view()),
 ]

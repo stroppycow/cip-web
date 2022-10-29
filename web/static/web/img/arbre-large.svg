@@ -13,7 +13,7 @@
    viewBox="0 0 400 160"
    version="1.1"
    id="svg8"
-   sodipodi:docname="arbre.svg"
+   sodipodi:docname="arbre-large-v1.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -28,9 +28,9 @@
      inkscape:window-height="991"
      id="namedview4139"
      showgrid="false"
-     inkscape:zoom="6.4625"
-     inkscape:cx="94.825132"
-     inkscape:cy="141.6573"
+     inkscape:zoom="1.615625"
+     inkscape:cx="-54.299652"
+     inkscape:cy="8.7306281"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
@@ -327,7 +327,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

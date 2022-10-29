@@ -1,10 +1,10 @@
 
-from pandas.io.pytables import DataCol
 from .params import parametrage_index_nomenclature, parametrage_index_profession
 import re
-from .utils import initialiser_instance_elastic,ConsultationIndexProfessionInternalException,ConsultationIndexProfessionBadRequestException
+from .utils import initialiser_instance_elastic, ConsultationIndexProfessionInternalException, ConsultationIndexProfessionBadRequestException
 import pandas as pd
 import markdown
+
 
 def first_true(liste):
     return liste.index(True)
@@ -19,7 +19,6 @@ def indexer_nomenclature_pcs2020(hosts,nom_index,fichier):
         data = pd.read_csv(fichier)
         print(data)
     except:
-        print("hey")
         raise ConsultationIndexProfessionBadRequestException('Impossible d\'interpréter le fichier csv')  
     valider_data_nomenclature(data)
     indexer_data_nomenclature_pcs2020(data.to_dict('records'),es,nom_index)
@@ -107,6 +106,7 @@ def indexer_data_nomenclature_pcs2020(data,es,nom_index):
         es.bulk(index = nom_index, body = bulk_data,request_timeout=300)
     except:
         raise ConsultationIndexProfessionInternalException('Impossible d\'indexer les données dans ElasticSearch')
+
 
 def indexer_index_professions(hosts,nom_index,fichier):
     try:

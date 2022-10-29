@@ -1,13 +1,15 @@
 from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import RechercheLibelleTexteSerializer, RechercheLibelleIDSerializer, RecherchePostePCSCodeSerializer, IndexationNomenclaturePCS2020Serializer, IndexationIndexProfessionSerializer
-from .elastic.recherche import rechercher_informations_codepcs,rechercher_profession_par_id,rechercher_professions_par_autocompletion, rechercher_profession_strict
+from .serializers import RechercheLibelleTexteSerializer, RechercheLibelleIDSerializer, RecherchePostePCSCodeSerializer, IndexationNomenclaturePCS2020Serializer, IndexationIndexProfessionSerializer, GetInputFileNomenclatureSerializer
+from .elastic.recherche import rechercher_informations_codepcs,rechercher_profession_par_id,rechercher_professions_par_autocompletion, rechercher_profession_strict, get_all_data_nomenclature_pcs2020,get_all_data_index_profession
 from .elastic.indexation import indexer_nomenclature_pcs2020, indexer_index_professions
 from .elastic.utils import ConsultationIndexProfessionInternalException,ConsultationIndexProfessionBadRequestException
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser
-
+from rest_framework import renderers
+from rest_framework.decorators import renderer_classes
+from rest_framework.views import APIView
 
 
 
@@ -156,3 +158,58 @@ class IndexationIndexProfessionPCS2020View(GenericAPIView):
                 return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
             return Response(data={"message":output}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CSVRenderer(renderers.BaseRenderer):
+    media_type = 'text/csv'
+    format = 'csv'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data.to_csv(sep=",",na_rep="",index=False,encoding="utf-8")
+
+
+@renderer_classes([CSVRenderer])
+class GetInputFileNomenclatureView(APIView):
+    """
+    Téléchargement la nomenclature actuellement disponible dans l'application
+    """
+    
+    serializer_class  = GetInputFileNomenclatureSerializer
+    def get(self,request,format=None):
+        serializer = GetInputFileNomenclatureSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                output = get_all_data_nomenclature_pcs2020(
+                    hosts = settings.ELASTIC['HOST'],
+                    nom_index=settings.ELASTIC['INDEX']['nomenclature_pcs2020']
+                )
+                return Response(data=output,status=status.HTTP_200_OK)
+            except ConsultationIndexProfessionInternalException:
+                return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@renderer_classes([CSVRenderer])
+class GetInputFileIndexView(APIView):
+    """
+    Téléchargement l'index des professions disponible dans l'application
+    """
+    
+    serializer_class  = GetInputFileNomenclatureSerializer
+    def get(self,request,format=None):
+        serializer = GetInputFileNomenclatureSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                output = get_all_data_index_profession(
+                    hosts = settings.ELASTIC['HOST'],
+                    nom_index=settings.ELASTIC['INDEX']['index_professions']
+                )
+                return Response(data=output,status=status.HTTP_200_OK)
+            except ConsultationIndexProfessionInternalException:
+                return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

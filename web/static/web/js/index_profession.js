@@ -40,18 +40,30 @@ document.getElementById("arbresvg").onload = function() {
 }
 
 addEventListener('resize', (event) => {
+    var change = false ;
     if((window.innerWidth <= 768 ) && largeTree){
         largeTree = false ;
+        change = true ;
         document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LONG_TREE);
     }else if((window.innerWidth > 768 ) && !largeTree){
         largeTree = true ;
+        change = true ;
         document.getElementById("arbresvg").setAttribute('data', NG_STATIC_FILES.LARGE_TREE);
+    }
+
+    if(change){
+        var statut = document.getElementById("statut").querySelector('option:checked').value;
+        var pub = document.getElementById("pub").querySelector('option:checked').value;
+        var cpf_pub = document.getElementById("position_pub").querySelector('option:checked').value;
+        var cpf_priv = document.getElementById("position_priv").querySelector('option:checked').value;
+        var nbsal = document.getElementById("nbsal").querySelector('option:checked').value;
+        construireArbre(statut, pub, cpf_pub, cpf_priv, nbsal);
     }
 });
 
 
 document.addEventListener('click', function (event) {
-    if (!(event.target.closest('search_auto') === null)) {
+    if (!event.target.classList.contains("search-auto-item")) {
         cleanAucompletionProfList();
     }
 });
@@ -61,6 +73,10 @@ document.getElementById("bouton_coder").addEventListener('click', function () {
 });
 
 document.getElementById("nav-arbre-tab").addEventListener('click', function () {
+    document.getElementById('section_codage').scrollIntoView({behavior: "auto", block: "start"});
+});
+
+document.getElementById("nav-code-tab").addEventListener('click', function () {
     document.getElementById('section_codage').scrollIntoView({behavior: "auto", block: "start"});
 });
 
@@ -163,7 +179,7 @@ function showSuggestionsProf(data) {
         } else {
             texteFormate = suggestion.libelle_feminise_formate;
         }
-        div += ('<li class="list-group-item list-group-item-action pl-4 pt-1 pb-1 pr-4 m-0" onmouseover="this.style.background=\'#8DB0E1\';" onmouseout="this.style.background=\'\';this.style.color=\'\';" onclick="autocompletionProfChoix('+suggestion.id.toString()+')"><small>' + texteFormate + '</small></li>');
+        div += ('<li class="list-group-item list-group-item-action pl-4 pt-1 pb-1 pr-4 m-0 search-auto-item" onmouseover="this.style.background=\'#8DB0E1\';" onmouseout="this.style.background=\'\';this.style.color=\'\';" onclick="autocompletionProfChoix('+suggestion.id.toString()+')"><small>' + texteFormate + '</small></li>');
     });
     document.getElementById('search_auto').innerHTML = div;
 }

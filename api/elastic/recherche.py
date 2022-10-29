@@ -1,6 +1,8 @@
 import re
 from .utils import initialiser_instance_elastic, ConsultationIndexProfessionInternalException, ConsultationIndexProfessionBadRequestException
-
+from markdownify import markdownify
+from elasticsearch.helpers import scan
+import pandas as pd
 
 def rechercher_professions_par_autocompletion(hosts,nom_index,libelle,genre,ratio_max_min_score=0.4):
     try:
@@ -298,3 +300,35 @@ def rechercher_informations_codepcs(hosts,nom_index,codepcs):
         except:
             autres_professions = []
     return {'intitule': libelle,'code':code_complet,'description':description,'professions_typiques':professions_typiques,'autres_professions':autres_professions} 
+
+
+def get_all_data_index_profession(hosts,nom_index):
+    try:
+        es = initialiser_instance_elastic(hosts)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+    res = scan(client=es, query={"query":{'match_all': {}}}, index=nom_index, scroll='2s')
+    cols=  ['libm','libf','priv_cad','priv_tec','priv_am','priv_emp','priv_oq','priv_onq','priv_nr','pub_catA','pub_catB','pub_catC','pub_nr','inde_0_9','inde_10_49','inde_sup49','inde_nr','aid_fam','ssvaran']
+    data = [{"id":int(x["_id"])} | ({y:x['_source'][y] for y in cols}) for x in res]
+    data = pd.DataFrame.from_records(data)
+    data.sort_values(by="id",inplace=True)
+    return data
+
+
+def get_all_data_nomenclature_pcs2020(hosts,nom_index):
+    try:
+        es = initialiser_instance_elastic(hosts)
+    except:
+        raise ConsultationIndexProfessionInternalException('Impossible de se connecter à ElasticSearch')
+    res = scan(client=es, query={"query":{'match_all': {}}}, index=nom_index, scroll='2s')
+    data = [{
+            "code":x['_source']["code"],
+            "niveau": x['_source']["niveau"],
+            "libelle": x['_source']["libelle"],
+            "description": None if x['_source']["description"] is None else markdownify(x['_source']["description"]),
+            "professions_typiques": x['_source']["professions_typiques"],
+            "autres_professions": x['_source']["autres_professions"]
+        } for x in res]
+    data = pd.DataFrame.from_records(data)
+    data.sort_values(by="code",inplace=True)
+    return data

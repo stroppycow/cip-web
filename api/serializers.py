@@ -250,3 +250,11 @@ class IndexationIndexProfessionSerializer(serializers.Serializer):
         label="Message de retour lors de l'indexation",
         read_only=True
     )
+
+class GetInputFileNomenclatureSerializer(serializers.Serializer):
+    fichier = serializers.FileField(
+        max_length=None,
+        allow_empty_file=False,
+        use_url=True,
+        read_only=True
+    )
