@@ -17,7 +17,7 @@ Avant de lancer cette application, la variable d'environnement `ELK_HOST` doit r
 L'application peut ensuite être lancée avec la commande `python manage.py runserver` ou `python3 manage.py runserver`.
 
 ### Utilisation de l'API
-Une API Rest est disponible pour accéder aux fonctionnalités d'autocomplétion et de recherche dans l'index. Le swagger de cet API peut être consulté via le chemin `/api/swagger-ui/`. 
+Une API Rest est disponible pour accéder aux fonctionnalités d'autocomplétion et de recherche dans l'index. Le swagger de cette API peut être consulté via le chemin `/api/swagger-ui/`. 
 
 ### Utilisation des pages web
 A documenter
